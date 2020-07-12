@@ -1,0 +1,569 @@
+WIDTH_UNIT = 100;
+HEIGHT_UNIT = 50;
+PORT_SIZE = 5;
+LINK_WIDTH = 3;
+LINK_ID_SEPARATOR = "-->";
+SELECTION_COLOR = "#63d0f5";
+COMPONENT_BORDER = "#dddddd";
+COMPONENT_FILL = "#f5f5f5";
+LINK_COLOR= "#ff7800";
+PORT_COLOR = "#ff7800";
+COMPONENT_HEADER_HEIGHT = 30;
+MIN_SCALE = 0.5;
+MAX_SCALE = 1.5;
+
+function Flow(nodes, links, settings) {
+    this.nodes = nodes || {};
+    this.links = links || {};
+    this.settings = settings || {};
+
+    /**
+     * Search all links that start from the given node_id
+     * @param node_id
+     * @returns {[]}
+     */
+    this.get_links_to_node = function(node_id) {
+        var links = {};
+        for (var i in this.links) {
+            var link = this.links[i];
+            for (var j in link.targets) {
+                var target = link.targets[j];
+                if (target.id().startsWith(node_id+":")) {
+                    links[i] = link;
+                    break;
+                }
+            }
+        }
+        return links;
+    }
+
+    /**
+     * Search all links that goes to the given node_id
+     * @param node_id
+     */
+    this.get_links_from_node = function(node_id) {
+        var links = {};
+        for (var i in this.links) {
+            if (i.startsWith(node_id+":")) {
+                links[i] = this.links[i];
+            }
+        }
+        return links;
+    }
+
+    /**
+     * Generate a unique node_id
+     * @returns {string}
+     */
+    this.generate_node_id = function () {
+        var acc = Object.keys(this.nodes).length+1;
+        while (this.nodes["node"+acc]) {
+            acc += 1;
+        }
+        return "node"+acc;
+    }
+
+    /**
+     * Tell if the given port is connected
+     * @param port
+     */
+    this.is_port_connected = function (port) {
+        if (port.direction === "out") {
+            if (this.links[port.id()] && Object.keys(this.links[port.id()].targets).length > 0) {
+                return true;
+            }
+        } else {
+            var links = this.get_links_to_node(port.component.node.id);
+            for (var i in links) {
+                var link = links[i];
+                if (link.targets[port.id()]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Export the flow
+     * @returns {{nodes: [], links: [], positions: {}}}
+     */
+    this.export = function() {
+
+        var flowData = {
+            'nodes': [],
+            'links': [],
+            'positions': {},
+            'settings': this.settings,
+        };
+
+        for (var i in this.nodes) {
+            var node = this.nodes[i];
+            flowData.nodes.push(node.export());
+            flowData.positions[node.id] = node.position();
+        }
+
+        for (var i in this.links) {
+            var link = this.links[i];
+            var linkData = link.export();
+            // Export the link if it has at least one target
+            if (linkData.targets.length > 0) {
+                flowData.links.push(linkData);
+            }
+        }
+
+        return flowData;
+    }
+}
+
+Flow.Node = function(id, component, settings, x, y) {
+
+    this.id = id;
+    this.component = component;
+    this.component.node = this;
+    this.component.update_port_id();
+
+    this.settings = settings;
+
+    var shape = new Konva.Group({
+        x: x,
+        y: y,
+        name: 'node',
+        id: this.id,
+        draggable: true
+    });
+    shape.add(component.shape);
+    this.shape = shape;
+
+    this.selectionRect = new Konva.Rect({
+        width: this.component.width,
+        height: this.component.height,
+        stroke: SELECTION_COLOR,
+        visible: false
+    })
+    this.shape.add(this.selectionRect);
+
+    /**
+     * Return the corresponding input port
+     * @param name
+     * @returns {*}
+     */
+    this.get_input = function (name) {
+        return this.component.inputs[name];
+    }
+
+    /**
+     * Return the corresponding output port
+     * @param name
+     * @returns {*}
+     */
+    this.get_output = function (name) {
+        return this.component.outputs[name];
+    }
+
+    /**
+     * Show selection indicator
+     */
+    this.select = function () {
+        this.component.main_rect.stroke(SELECTION_COLOR);
+    }
+
+    /**
+     * Hide selection indicator
+     */
+    this.unselect = function () {
+        this.component.main_rect.stroke(COMPONENT_BORDER);
+    }
+
+    /**
+     *
+     */
+    this.remove = function () {
+        this.shape.destroy();
+    }
+
+    /**
+     * Export the node
+     * @returns {{settings: *, component: *, id: *}}
+     */
+    this.export = function () {
+        return {
+            'id': this.id,
+            'component': this.component.id,
+            'settings': this.settings
+        }
+    }
+
+    /**
+     * Return the current position of the node
+     * @returns {{x: *, y: *}}
+     */
+    this.position = function () {
+        return {
+            'x': this.shape.x(),
+            'y': this.shape.y(),
+        }
+    }
+}
+
+Flow.Component = function(id, inputs, outputs, size) {
+
+    this.id = id;
+    this.node = null;
+    this._inputs = inputs
+    this.inputs = {};
+    this._outputs = outputs
+    this.outputs = {};
+    this.width = Math.max(1, parseInt(size)) * WIDTH_UNIT;
+    this.height = Math.max(this._inputs.length, this._outputs.length, 1) * HEIGHT_UNIT + COMPONENT_HEADER_HEIGHT;
+
+    var parts = id.split(".")
+    this.name = parts.pop();
+    this.module = parts.join(".");
+
+    var shape = new Konva.Group({
+        name: 'component'
+    });
+    this.main_rect = new Konva.Rect({
+        width: this.width,
+        height: this.height,
+        fill: COMPONENT_FILL,
+        stroke: COMPONENT_BORDER,
+        strokeWidth: 2,
+        cornerRadius: 5
+    });
+    shape.add(this.main_rect);
+    shape.add(new Konva.Text({
+        text: this.module.toUpperCase(),
+        align: 'center',
+        fontSize: 10,
+        fontFamily: 'Muli',
+        width: this.width,
+        height: this.height,
+        verticalAlign: 'top',
+        fill: "#aaaaaa",
+        padding: 7
+    }));
+    shape.add(new Konva.Text({
+        text: this.name,
+        align: 'center',
+        fontSize: 17,
+        fontFamily: 'Muli',
+        width: this.width,
+        height: this.height - 15,
+        y: 15,
+        verticalAlign: 'top',
+        padding: 7
+    }));
+
+    if (this._inputs.length > 0) {
+        var offset = (this.height - this._inputs.length*PORT_SIZE - COMPONENT_HEADER_HEIGHT) / (this._inputs.length+1);
+        for (var i in this._inputs) {
+            var index = parseInt(i);
+            var input = this._inputs[i];
+            this.inputs[input.name] = new Flow.Port(input.name, 'input', 0, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'in');
+            this.inputs[input.name].component = this;
+            shape.add(this.inputs[input.name].shape);
+            shape.add(this.inputs[input.name].text(this));
+        }
+    }
+
+    if (this._outputs.length > 0) {
+        var offset = (this.height - (this._outputs.length)*PORT_SIZE - COMPONENT_HEADER_HEIGHT) / (this._outputs.length+1);
+        for (var i in this._outputs) {
+            var index = parseInt(i);
+            var output = this._outputs[i];
+            this.outputs[output.name] = new Flow.Port(output.name, 'output', this.width, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'out')
+            this.outputs[output.name].component = this;
+            shape.add(this.outputs[output.name].shape);
+            shape.add(this.outputs[output.name].text(this));
+        }
+    }
+
+    this.shape = shape;
+
+    /**
+     * Update all the port id
+     */
+    this.update_port_id = function () {
+        for (var i in this.inputs) {
+            this.inputs[i].shape.id(this.inputs[i].id());
+        }
+        for (var i in this.outputs) {
+            this.outputs[i].shape.id(this.outputs[i].id());
+        }
+    }
+}
+
+Flow.Port = function(name, type, x, y, direction) {
+
+    this.name = name;
+    this.component = null;
+    this.type = type; // Type of data
+    this.x = x;
+    this.y = y;
+    this.direction = direction;
+
+    this.shape = new Konva.Circle({
+        x: this.x + (this.direction === 'in' ? 10 : -10 ),
+        y: this.y,
+        radius: PORT_SIZE,
+        name: 'port-'+this.direction,
+        fill: PORT_COLOR
+    })
+
+    this.text = function(component) {
+        var offset = 20;
+        return new Konva.Text({
+            y: this.y-PORT_SIZE,
+            x: this.direction === 'in' ? offset : 0 ,
+            text: this.name.toLowerCase(),
+            align: this.direction === 'in' ? 'left' : 'right' ,
+            fontSize: 12,
+            fontFamily: 'Muli',
+            width: component.width - offset,
+            height: 2*PORT_SIZE,
+            verticalAlign: 'middle'
+        })
+    }
+
+    this.hitbox = function () {
+        return new Konva.Circle({
+            id: this.id(),
+            x: this.shape.absolutePosition().x,
+            y: this.shape.absolutePosition().y,
+            radius: PORT_SIZE*1.5,
+            name: 'port-'+this.direction,
+            fill: 'transparent'
+        })
+    }
+
+    /**
+     * Select the port
+     */
+    this.select = function () {
+        this.shape.fill(SELECTION_COLOR);
+    }
+
+    /**
+     * Unselect the port
+     */
+    this.unselect = function () {
+        this.shape.fill(PORT_COLOR);
+    }
+
+    /**
+     * Return port id (node_id:port_name)
+     * @returns {string}
+     */
+    this.id = function () {
+        return this.component.node.id+":"+this.name;
+    }
+
+}
+
+Flow.Link = function (source, targets) {
+    this.source = source;
+    this.targets = targets;
+    this.target_mapping = {};
+    this.shapes = {}
+    this.selectedLinkId = null;
+
+    /**
+     * Compute the path from source to the target
+     * @param target
+     * @returns {*[]}
+     */
+    this.compute_points = function(target) {
+        var sourcePosition = this.source.shape.absolutePosition();
+        var targetPosition = target.shape.absolutePosition();
+
+        if (targetPosition.x >= sourcePosition.x - (sourcePosition.x-targetPosition.x)/2) {
+            return [
+                sourcePosition.x, sourcePosition.y,
+                sourcePosition.x + Math.min(150, Math.max(50, Math.abs(targetPosition.x-sourcePosition.x)/2)), sourcePosition.y,
+                targetPosition.x - Math.min(150, Math.max(50, Math.abs(targetPosition.x-sourcePosition.x)/2)), targetPosition.y,
+                targetPosition.x, targetPosition.y
+            ];
+        } else if (Math.abs(targetPosition.y - sourcePosition.y) < HEIGHT_UNIT) {
+            return [
+                sourcePosition.x, sourcePosition.y,
+                sourcePosition.x + Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), sourcePosition.y-100,
+                targetPosition.x - Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), targetPosition.y-100,
+                targetPosition.x, targetPosition.y
+            ];
+        } else if (targetPosition.y >= sourcePosition.y) {
+            return [
+                sourcePosition.x, sourcePosition.y,
+                sourcePosition.x + Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), sourcePosition.y+Math.min(100, Math.max(75, Math.abs(targetPosition.y-sourcePosition.y)/2)),
+                targetPosition.x - Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), targetPosition.y-Math.min(100, Math.max(75, Math.abs(targetPosition.y-sourcePosition.y)/2)),
+                targetPosition.x, targetPosition.y
+            ];
+        } else {
+            return [
+                sourcePosition.x, sourcePosition.y,
+                sourcePosition.x + Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), sourcePosition.y-Math.min(100, Math.max(75, Math.abs(targetPosition.y-sourcePosition.y)/2)),
+                targetPosition.x - Math.min(150, Math.max(200, Math.abs(targetPosition.x-sourcePosition.x)/2)), targetPosition.y+Math.min(100, Math.max(75, Math.abs(targetPosition.y-sourcePosition.y)/2)),
+                targetPosition.x, targetPosition.y
+            ];
+        }
+
+
+    }
+
+    /**
+     * Load the link and create all paths
+     */
+    this.load = function () {
+        this.target_mapping = {};
+        for (var i in this.targets) {
+            var target = this.targets[i];
+            var id = this.source.id() + LINK_ID_SEPARATOR + target.id();
+            this.target_mapping[id] = i;
+            this.shapes[id] = new Konva.Line({
+                points: this.compute_points(target),
+                stroke: LINK_COLOR,
+                name: 'link',
+                id: id,
+                strokeWidth: LINK_WIDTH,
+                lineCap: 'round',
+                lineJoin: 'round',
+                bezier: true
+            });
+        }
+    }
+
+    this.load();
+
+    /**
+     * Reload all the lines
+     */
+    this.reload = function() {
+        this.remove();
+        this.load();
+    }
+
+    /**
+     * Show selection indicator
+     */
+    this.select = function (id) {
+        this.selectedLinkId = id;
+        // Select the source port
+        this.source.select();
+        // Select the target port
+        this.targets[this.target_mapping[id]].select();
+        // Change line color
+        this.shapes[this.selectedLinkId].stroke(SELECTION_COLOR);
+    }
+
+    /**
+     * Hide selection indicator
+     */
+    this.unselect = function () {
+        if (this.selectedLinkId) {
+            // Select the source port
+            this.source.unselect();
+            // Unselect the target port
+            if (this.targets[this.target_mapping[this.selectedLinkId]]) {
+                this.targets[this.target_mapping[this.selectedLinkId]].unselect();
+            }
+            // Change the link color
+            if (this.shapes[this.selectedLinkId]) {
+                this.shapes[this.selectedLinkId].stroke(LINK_COLOR)
+            }
+            this.selectedLinkId = null;
+        }
+    }
+
+    /**
+     * Remove the link
+     */
+    this.remove = function () {
+        for (var i in this.shapes) {
+            this.shapes[i].destroy();
+            delete this.shapes[i];
+        }
+    }
+
+    /**
+     * Destroy all shapes
+     */
+    this.destroy = function () {
+        for (var i in this.shapes) {
+            this.shapes[i].destroy();
+            delete this.shapes[i];
+        }
+    }
+
+    /**
+     * Export the link
+     * @returns {{source: *, targets: []}}
+     */
+    this.export = function () {
+        var targets = [];
+        for (var j in this.targets) {
+            targets.push(this.targets[j].id());
+        }
+        return {
+            'source': this.source.id(),
+            'targets': targets
+        };
+    }
+
+    /**
+     * Remove all the sublink for the given node_id
+     * @param node_id
+     */
+    this.remove_target_to_node = function (node_id) {
+        for (var i in this.targets) {
+            if (i.startsWith(node_id+":")) {
+                this.remove_target(i);
+            }
+        }
+    }
+
+    /**
+     * Remove the sublink to the target with given port_id
+     * @param port_id
+     */
+    this.remove_target = function(port_id) {
+        // Unselect before deleting to update the UI
+        this.unselect();
+        if (this.targets[port_id]) {
+            // Delete the port from target list
+            delete this.targets[port_id];
+            for (var j in this.target_mapping) {
+                if (this.target_mapping[j] === port_id) {
+                    // Use the mapping to get the shape and destroy it
+                    this.shapes[j].destroy();
+                    // Clean the shapes array
+                    delete this.shapes[j];
+                    // Delete from the mapping
+                    delete this.target_mapping[j];
+                }
+            }
+        }
+    }
+
+    /**
+     * Add the given port to targets
+     * @param port
+     */
+    this.add_target = function (port) {
+        if (this.targets[port.id()]) {
+            throw "Ce lien existe déjà";
+        }
+        this.targets[port.id()] = port;
+        this.reload();
+    }
+
+    /**
+     * Update all the lines coordinates
+     */
+    this.update_paths = function () {
+        for (var i in this.shapes) {
+            var line = this.shapes[i];
+            line.points(this.compute_points(this.targets[this.target_mapping[i]]))
+        }
+    }
+}
