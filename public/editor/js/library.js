@@ -22,8 +22,8 @@ function Library() {
                     this.components[components[i].id].module = part.join(".");
                     if (!this.modules[this.components[components[i].id].module]) {
                         this.modules[this.components[components[i].id].module] = [];
-                        this.modules[this.components[components[i].id].module].push(this.components[components[i].id]);
                     }
+                    this.modules[this.components[components[i].id].module].push(this.components[components[i].id]);
                 }
                 this.loading = false;
                 this.loaded = true;
