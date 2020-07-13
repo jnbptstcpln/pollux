@@ -230,7 +230,7 @@
     text-align: center;
 }
 .component-list > li:not(:last-child) {
-    margin-bottom: 5px;
+    margin-bottom: 7px;
 }
 .component-list > li > span {
     background-color: white;
