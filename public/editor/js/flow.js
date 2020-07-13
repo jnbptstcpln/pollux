@@ -1,16 +1,33 @@
+// COMPONENT SIZING
 WIDTH_UNIT = 100;
 HEIGHT_UNIT = 50;
+COMPONENT_HEADER_HEIGHT = 30;
 PORT_SIZE = 5;
+
+// LINK
 LINK_WIDTH = 3;
 LINK_ID_SEPARATOR = "-->";
+
+// COLORS
+PRIMARY_COLOR = "#0050D7";
 SELECTION_COLOR = "#63d0f5";
 COMPONENT_BORDER = "#dddddd";
 COMPONENT_FILL = "#f5f5f5";
 LINK_COLOR= "#ff7800";
 PORT_COLOR = "#ff7800";
-COMPONENT_HEADER_HEIGHT = 30;
+
+// SCALING
 MIN_SCALE = 0.5;
 MAX_SCALE = 1.5;
+
+// ACTIONS
+ACTIONS = {
+    'clone': "\uf24d",
+    'remove': "\uf2ed",
+    'infos': "\uf05a"
+};
+ACTIONS_BUTTON_SIZE = 30;
+ACTIONS_BUTTON_SPACING = 5;
 
 function Flow(nodes, links, settings) {
     this.nodes = nodes || {};
@@ -125,15 +142,14 @@ Flow.Node = function(id, component, settings, x, y) {
 
     this.settings = settings;
 
-    var shape = new Konva.Group({
+    this.shape = new Konva.Group({
         x: x,
         y: y,
         name: 'node',
         id: this.id,
         draggable: true
     });
-    shape.add(component.shape);
-    this.shape = shape;
+    this.shape.add(component.shape);
 
     this.selectionRect = new Konva.Rect({
         width: this.component.width,
@@ -166,6 +182,7 @@ Flow.Node = function(id, component, settings, x, y) {
      */
     this.select = function () {
         this.component.main_rect.stroke(SELECTION_COLOR);
+        this.component.actions.show();
     }
 
     /**
@@ -173,6 +190,7 @@ Flow.Node = function(id, component, settings, x, y) {
      */
     this.unselect = function () {
         this.component.main_rect.stroke(COMPONENT_BORDER);
+        this.component.actions.hide();
     }
 
     /**
@@ -191,6 +209,17 @@ Flow.Node = function(id, component, settings, x, y) {
             'id': this.id,
             'component': this.component.id,
             'settings': this.settings
+        }
+    }
+
+    /**
+     * Set a callback for click event on the button corresponding to the given name
+     * @param name
+     * @param callback
+     */
+    this.set_action = function(name, callback) {
+        if (this.component.actions.buttons[name]) {
+            this.component.actions.buttons[name].callback = callback;
         }
     }
 
@@ -221,7 +250,7 @@ Flow.Component = function(id, inputs, outputs, size) {
     this.name = parts.pop();
     this.module = parts.join(".");
 
-    var shape = new Konva.Group({
+    this.shape = new Konva.Group({
         name: 'component'
     });
     this.main_rect = new Konva.Rect({
@@ -232,8 +261,8 @@ Flow.Component = function(id, inputs, outputs, size) {
         strokeWidth: 2,
         cornerRadius: 5
     });
-    shape.add(this.main_rect);
-    shape.add(new Konva.Text({
+    this.shape.add(this.main_rect);
+    this.shape.add(new Konva.Text({
         text: this.module.toUpperCase(),
         align: 'center',
         fontSize: 10,
@@ -244,7 +273,7 @@ Flow.Component = function(id, inputs, outputs, size) {
         fill: "#aaaaaa",
         padding: 7
     }));
-    shape.add(new Konva.Text({
+    this.shape.add(new Konva.Text({
         text: this.name,
         align: 'center',
         fontSize: 17,
@@ -256,6 +285,9 @@ Flow.Component = function(id, inputs, outputs, size) {
         padding: 7
     }));
 
+    // Register action
+    this.actions = new Flow.Component.Actions(this);
+
     if (this._inputs.length > 0) {
         var offset = (this.height - this._inputs.length*PORT_SIZE - COMPONENT_HEADER_HEIGHT) / (this._inputs.length+1);
         for (var i in this._inputs) {
@@ -263,8 +295,8 @@ Flow.Component = function(id, inputs, outputs, size) {
             var input = this._inputs[i];
             this.inputs[input.name] = new Flow.Port(input.name, 'input', 0, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'in');
             this.inputs[input.name].component = this;
-            shape.add(this.inputs[input.name].shape);
-            shape.add(this.inputs[input.name].text(this));
+            this.shape.add(this.inputs[input.name].shape);
+            this.shape.add(this.inputs[input.name].text(this));
         }
     }
 
@@ -275,12 +307,10 @@ Flow.Component = function(id, inputs, outputs, size) {
             var output = this._outputs[i];
             this.outputs[output.name] = new Flow.Port(output.name, 'output', this.width, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'out')
             this.outputs[output.name].component = this;
-            shape.add(this.outputs[output.name].shape);
-            shape.add(this.outputs[output.name].text(this));
+            this.shape.add(this.outputs[output.name].shape);
+            this.shape.add(this.outputs[output.name].text(this));
         }
     }
-
-    this.shape = shape;
 
     /**
      * Update all the port id
@@ -293,6 +323,87 @@ Flow.Component = function(id, inputs, outputs, size) {
             this.outputs[i].shape.id(this.outputs[i].id());
         }
     }
+}
+
+Flow.Component.Actions = function (component) {
+
+    this.component = component;
+    this.buttons = {};
+
+    this.shape = new Konva.Group({
+        y: -ACTIONS_BUTTON_SIZE*1.1,
+        x: this.component.width/2 - Object.keys(ACTIONS).length*(ACTIONS_BUTTON_SIZE+ACTIONS_BUTTON_SPACING)/2,
+        name: 'component-actions',
+        visible: false
+    });
+
+    var acc = 0;
+    for (var action in ACTIONS) {
+        var button = new Flow.Component.Actions.Button(action, ACTIONS[action], acc*(ACTIONS_BUTTON_SIZE+ACTIONS_BUTTON_SPACING));
+        this.buttons[action] = button;
+        this.shape.add(button.shape);
+        acc += 1;
+    }
+
+    // Add action to component
+    this.component.shape.add(this.shape);
+
+    this.show = function() {
+        this.shape.show();
+    }
+
+    this.hide = function() {
+        this.shape.hide();
+    }
+}
+
+Flow.Component.Actions.Button = function (name, icon, x) {
+
+    this.callback = null;
+
+    this.shape = new Konva.Group({
+        x: x,
+        name: name
+    });
+    this.background = new Konva.Circle({
+        x: ACTIONS_BUTTON_SIZE/2,
+        y: ACTIONS_BUTTON_SIZE/2,
+        radius: ACTIONS_BUTTON_SIZE/2,
+        name: name,
+        fill: 'white'
+    });
+    this.icon = new Konva.Text({
+        text: icon, // Clone
+        align: 'center',
+        fontSize: 15,
+        fontFamily: '"Font Awesome 5 Pro"',
+        width: ACTIONS_BUTTON_SIZE,
+        height: ACTIONS_BUTTON_SIZE,
+        verticalAlign: 'middle'
+    })
+
+    this.shape.add(this.background);
+    this.shape.add(this.icon);
+
+    this.shape.on('mouseenter', function(e) {
+        console.log('aa');
+        this.background.fill(PRIMARY_COLOR);
+        this.icon.fill('white');
+        this.shape.draw();
+        this.shape.getStage().container().style.cursor = "pointer";
+    }.bind(this));
+    this.shape.on('mouseleave', function(e) {
+        this.background.fill('white');
+        this.icon.fill('black');
+        this.shape.getLayer().draw();
+        this.shape.getStage().container().style.cursor = "default";
+    }.bind(this));
+    this.shape.on('click tap', function(e) {
+        console.log('click');
+        if (this.callback) {
+            this.callback(e)
+        }
+    }.bind(this))
 }
 
 Flow.Port = function(name, type, x, y, direction) {
