@@ -29,8 +29,8 @@ function FlowEditor(on_loaded) {
             li.append("<a><span class=\"icon\"><i class=\"fas fa-box-open\"></i></span><span class=\"menu-label\">{0}</span></a>".format(module.toUpperCase()))
             li.append("<div style='--height: 350px'><div class='p-10'></div></div>")
             var ul = $.DOM.create("ul").addClass("component-list");
-            for (var i in this.library.modules[module]) {
-                var component = this.library.modules[module][i];
+            for (var j in this.library.modules[module]) {
+                var component = this.library.modules[module][j];
                 var _li = $.DOM.create("li");
                 var span = $.DOM.create("span");
                 span.html("<div><span class='module'>{1}</span><span class='name'>{2}</span></div><a href='{0}' class='info'><i class='far fa-info-circle'></i></a>".format(component.id, component.module, component.name));
@@ -135,30 +135,6 @@ function FlowEditor(on_loaded) {
             this.update();
         }
     }.bind(this));
-
-    // Component library
-    this.components = {
-        'event.acme.HelloWorld': function() {
-            return new Flow.Component("event.acme.HelloWorld", [], [{'name': 'text', 'type': 'string'}], 2)
-        },
-        'system.Print': function() {
-            return new Flow.Component("system.Print", [{'name': 'value', 'type': 'string'}], [{'name': 'value', 'type': 'string'}], 2)
-        },
-        'math.Addition': function() {
-            return new Flow.Component("math.Addition", [{'name': 'a', 'type': 'float'}, {'name': 'b', 'type': 'float'}], [{'name': 'result', 'type': 'float'}], 2);
-        },
-    }
-    /**
-     * Get the component corresponding to the given id
-     * @param id
-     * @returns Component
-     */
-    this.getComponent = function (id) {
-        if (!this.components[id]) {
-            throw "Aucun composant ne correspond à '"+id+"'";
-        }
-        return this.components[id]();
-    }
 
     /**
      * Draw on the layer
@@ -409,7 +385,7 @@ function FlowEditor(on_loaded) {
         // Generate a unique node_id
         var node_id = this.flow.generate_node_id();
         // Create component
-        var component = this.getComponent(component_id);
+        var component = this.library.get(component_id);
         // Create the new node, ajust the position to center the node on x and y
         this.flow.nodes[node_id] = new Flow.Node(node_id, component, {}, x-component.width/2, y-component.height/2);
         // Load the node inside the layer
