@@ -4,7 +4,7 @@ var flowData = {
     "nodes": [
         {
             "id": "node1",
-            "component": "event.acme.HelloWorld"
+            "component": "api.oceane.RechercheRessource"
         },
         {
             "id": "node2",
@@ -12,14 +12,20 @@ var flowData = {
         },
         {
             "id": "node3",
-            "component": "math.Addition"
+            "component": "system.Exit"
         }
     ],
     "links": [
         {
-            "source": "node1:text",
+            "source": "node1:ressource",
             "targets": [
                 "node2:value"
+            ]
+        },
+        {
+            "source": "node2:value",
+            "targets": [
+                "node3:value"
             ]
         }
     ],
@@ -30,11 +36,11 @@ var flowData = {
         },
         "node2": {
             'x': 700,
-            'y': 100
+            'y': 150
         },
         "node3": {
-            'x': 450,
-            'y': 300
+            'x': 1000,
+            'y': 125
         }
     }
 };
