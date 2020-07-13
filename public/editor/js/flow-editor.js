@@ -66,7 +66,7 @@ function FlowEditor(on_loaded) {
     /**
      * ADD SOME LISTENER ON STAGE AND LAYER
      */
-    this.stage.on('click', function(event) {
+    this.stage.on('click tap', function(event) {
         if (event.target === this.stage) {
             if (this.mode === "selection") {
                 this.clear_selection();
@@ -76,7 +76,7 @@ function FlowEditor(on_loaded) {
             }
         }
     }.bind(this));
-    this.port_layer.on('click', function(event) {
+    this.port_layer.on('click tap', function(event) {
         // User click an output port
         if (event.target.hasName("port-out")) {
             // Change the mode
@@ -232,7 +232,28 @@ function FlowEditor(on_loaded) {
     this.load_node = function(node) {
         this.nodes_layer.add(node.shape);
         node.shape.on('dragmove', this.onNodeMove.bind(this, node.shape));
-        node.shape.on('click', this.onNodeSelected.bind(this, node.shape));
+        node.shape.on('click tap', this.onNodeSelected.bind(this, node.shape));
+
+        // Add listener to node's buttons
+        node.set_action('clone', function(event) {
+            // cancel event propagation to prevent other click listener to execute (permit to select the new node)
+            event.cancelBubble = true;
+            var newNode = this.add_node(node.component.id, node.shape.x()+node.component.width/2+30, node.shape.y()+node.component.height/2+30);
+            // Select the new node
+            this.onNodeSelected(newNode.shape)
+        }.bind(this))
+        node.set_action('remove', function(event) {
+            // cancel event propagation to prevent other click listener to execute
+            event.cancelBubble = true;
+            this.remove_node(node.id);
+        }.bind(this))
+        node.set_action('infos', function(event) {
+            // cancel event propagation to prevent other click listener to execute
+            event.cancelBubble = true;
+            alert('La documentation sera bientôt accessible...');
+            // TODO: Implement documentation access
+        }.bind(this))
+
         this.update();
     }
 
@@ -243,7 +264,7 @@ function FlowEditor(on_loaded) {
     this.load_link = function(link) {
         for (var j in link.shapes) {
             this.links_layer.add(link.shapes[j]);
-            link.shapes[j].on('click', this.onLinkSelected.bind(this, link.shapes[j]))
+            link.shapes[j].on('click tap', this.onLinkSelected.bind(this, link.shapes[j]))
         }
         this.draw();
     }
@@ -390,7 +411,7 @@ function FlowEditor(on_loaded) {
         // Create component
         var component = this.getComponent(component_id);
         // Create the new node, ajust the position to center the node on x and y
-        this.flow.nodes[node_id] = new Flow.Node(node_id, component, {}, x-component.width/2 || 100, y-component.height/2 || 100);
+        this.flow.nodes[node_id] = new Flow.Node(node_id, component, {}, x-component.width/2, y-component.height/2);
         // Load the node inside the layer
         this.load_node(this.flow.nodes[node_id]);
         // Return the node instance
@@ -555,6 +576,12 @@ function FlowEditor(on_loaded) {
         }
     }.bind(this));
 
+    $("#editor > .layout > .leftbar").on('click', 'ul.component-list li a.info', function (event) {
+        event.preventDefault();
+        alert("La documentation sera bientôt disponible...");
+        // TODO: Implement documentation access
+    });
+
     $("#export").on('click', function (event) {
         event.preventDefault();
         console.log(this.flow.export());
@@ -614,7 +641,7 @@ function FlowEditor(on_loaded) {
                         span.attr('data-id', component.id);
                         span.on('dragstart', function (event) {
                             event.dataTransfer.setData("component", event.element.attr('data-id'));
-                        }.bind(this))
+                        }.bind(this));
                         li.append(span);
                         results.append(li);
                     }
