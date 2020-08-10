@@ -52,7 +52,8 @@ function Library() {
                 componentData.id,
                 componentData.inputs,
                 componentData.outputs,
-                componentData.size
+                componentData.size,
+                componentData.settings
             );
         }
         throw "Aucun composant correspondant pour '"+component_id+"'";

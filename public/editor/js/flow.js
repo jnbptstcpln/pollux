@@ -1,6 +1,7 @@
 // COMPONENT SIZING
-WIDTH_UNIT = 100;
-HEIGHT_UNIT = 50;
+WIDTH_DEFAULT = 50
+WIDTH_UNIT = 25;
+HEIGHT_UNIT = 45;
 COMPONENT_HEADER_HEIGHT = 30;
 PORT_SIZE = 5;
 
@@ -205,11 +206,15 @@ Flow.Node = function(id, component, settings, x, y) {
      * @returns {{settings: *, component: *, id: *}}
      */
     this.export = function () {
-        return {
-            'id': this.id,
-            'component': this.component.id,
-            'settings': this.settings
-        }
+        var data = {};
+        Object.assign(data,
+            {
+                'id': this.id,
+                'component': this.component.id
+            },
+            this.settings
+        )
+        return data;
     }
 
     /**
@@ -233,9 +238,91 @@ Flow.Node = function(id, component, settings, x, y) {
             'y': this.shape.y(),
         }
     }
+
+    /**
+     * Build a form inside the given container to edit node's settings
+     * @param sidebar
+     */
+    this.build_settings_form = function(sidebar) {
+        var form = Form.create("<div class='header'><h3>{0}</h3><h2>{1}</h2></div>".format(this.component.module, this.component.name));
+
+        // Inputs
+        if (this.component._inputs.length > 0) {
+
+            if (this.settings["inputs"] === undefined) {
+                this.settings["inputs"] = {};
+            }
+
+            var fieldset = Form.fieldset("Entrée{0}".format(this.component._inputs.length > 1 ? "s": ""));
+            for (var i in this.component._inputs) {
+                var input = this.component._inputs[i];
+
+                var type = "text";
+                switch (input.type) {
+                    case "float":
+                    case "int":
+                        type = "number";
+                        break;
+                }
+
+                fieldset.append(Form.input(
+                    input.name,
+                    input.name,
+                    type,
+                    this.settings["inputs"][input.name] !== undefined ? this.settings["inputs"][input.name] : "",
+                    function(name, value) {
+                        if (value.length > 0) {
+                            this.settings["inputs"][name] = value;
+                        } else {
+                            delete this.settings["inputs"][name];
+                        }
+
+                    }.bind(this)
+                ))
+            }
+            form.append(fieldset)
+        }
+
+        // Settings
+        if (this.component.settings.length > 0) {
+            var fieldset = Form.fieldset("Options");
+            for (var i in this.component.settings) {
+                var setting = this.component.settings[i];
+
+                var type = "text";
+                switch (setting.type) {
+                    case "float":
+                    case "int":
+                        type = "number";
+                        break;
+                }
+
+                fieldset.append(Form.input(
+                    setting.name,
+                    setting.name,
+                    type,
+                    this.settings[setting.name] !== undefined ? this.settings[setting.name] : "",
+                    function(name, value) {
+                        if (value.length > 0) {
+                            this.settings[name] = value;
+                        } else {
+                            delete this.settings[name];
+                        }
+
+                    }.bind(this)
+                ))
+            }
+            form.append(fieldset)
+        }
+
+        // Settings
+
+        sidebar.append(form);
+    }
+
 }
 
-Flow.Component = function(id, inputs, outputs, size) {
+Flow.Component = function(id, inputs, outputs, size, settings) {
 
     this.id = id;
     this.node = null;
@@ -243,8 +330,9 @@ Flow.Component = function(id, inputs, outputs, size) {
     this.inputs = {};
     this._outputs = outputs
     this.outputs = {};
-    this.width = Math.max(1, parseInt(size)) * WIDTH_UNIT;
-    this.height = Math.max(this._inputs.length, this._outputs.length, 1) * HEIGHT_UNIT + COMPONENT_HEADER_HEIGHT;
+    this.size = parseInt(size);
+
+    this.settings = settings;
 
     var parts = id.split(".")
     this.name = parts.pop();
@@ -253,62 +341,124 @@ Flow.Component = function(id, inputs, outputs, size) {
     this.shape = new Konva.Group({
         name: 'component'
     });
-    this.main_rect = new Konva.Rect({
-        width: this.width,
-        height: this.height,
-        fill: COMPONENT_FILL,
-        stroke: COMPONENT_BORDER,
-        strokeWidth: 2,
-        cornerRadius: 5
-    });
-    this.shape.add(this.main_rect);
-    this.shape.add(new Konva.Text({
-        text: this.module.toUpperCase(),
-        align: 'center',
-        fontSize: 10,
-        fontFamily: 'Muli',
-        width: this.width,
-        height: this.height,
-        verticalAlign: 'top',
-        fill: "#aaaaaa",
-        padding: 7
-    }));
-    this.shape.add(new Konva.Text({
-        text: this.name,
-        align: 'center',
-        fontSize: 17,
-        fontFamily: 'Muli',
-        width: this.width,
-        height: this.height - 15,
-        y: 15,
-        verticalAlign: 'top',
-        padding: 7
-    }));
+
+    // Configuration depending on size
+    switch (size) {
+        case 0:
+            this.width = Math.round((Math.max(1, parseInt(size)) * WIDTH_UNIT + WIDTH_DEFAULT) * ((this._inputs.length > 0 && this._outputs.length > 0) ? 1.5 : 1));
+            this.height = Math.max(this._inputs.length, this._outputs.length, 1) * HEIGHT_UNIT/2;
+
+            var text = new Konva.Text({
+                text: this.name.toUpperCase(),
+                align: alignement,
+                fontSize: 10,
+                fontFamily: 'Muli',
+                verticalAlign: 'middle',
+                height: this.height,
+                fill: "#555555",
+                padding: 8
+            })
+
+            var alignement = "center";
+            this.width = (text.width() + 10) + 3 * PORT_SIZE;
+            if (this._inputs.length > 0 && this._outputs.length === 0) {
+                alignement = "right"
+                this.width = (text.width() + 5) + 2 * PORT_SIZE;
+            } else if (this._inputs.length === 0 && this._outputs.length > 0) {
+                alignement = "left"
+                this.width = (text.width() + 5) + 2* PORT_SIZE;
+            }
+
+            this.main_rect = new Konva.Rect({
+                width: this.width,
+                height: this.height,
+                fill: COMPONENT_FILL,
+                stroke: COMPONENT_BORDER,
+                strokeWidth: 2,
+                cornerRadius: 15
+            });
+            this.shape.add(this.main_rect);
+            this.shape.add(new Konva.Text({
+                text: this.name.toUpperCase(),
+                align: alignement,
+                fontSize: 10,
+                fontFamily: 'Muli',
+                verticalAlign: 'middle',
+                width: this.width,
+                height: this.height,
+                fill: "#555555",
+                padding: 8
+            }));
+
+            break;
+
+        default:
+            this.width = Math.round((Math.max(1, parseInt(size)) * WIDTH_UNIT + WIDTH_DEFAULT) * ((this._inputs.length > 0 && this._outputs.length > 0) ? 2 : 1.25));
+            this.height = Math.max(this._inputs.length, this._outputs.length, 1) * HEIGHT_UNIT + COMPONENT_HEADER_HEIGHT;
+
+            this.main_rect = new Konva.Rect({
+                width: this.width,
+                height: this.height,
+                fill: COMPONENT_FILL,
+                stroke: COMPONENT_BORDER,
+                strokeWidth: 2,
+                cornerRadius: 5
+            });
+            this.shape.add(this.main_rect);
+            this.shape.add(new Konva.Text({
+                text: this.module.toUpperCase(),
+                align: 'center',
+                fontSize: 10,
+                fontFamily: 'Muli',
+                width: this.width,
+                height: this.height,
+                verticalAlign: 'top',
+                fill: "#aaaaaa",
+                padding: 7
+            }));
+            this.shape.add(new Konva.Text({
+                text: this.name,
+                align: 'center',
+                fontSize: 15,
+                fontFamily: 'Muli',
+                width: this.width,
+                height: this.height - 15,
+                y: 15,
+                verticalAlign: 'top',
+                padding: 7
+            }));
+
+            break;
+    }
 
     // Register action
     this.actions = new Flow.Component.Actions(this);
 
     if (this._inputs.length > 0) {
-        var offset = (this.height - this._inputs.length*PORT_SIZE - COMPONENT_HEADER_HEIGHT) / (this._inputs.length+1);
+        var offset = (this.height - this._inputs.length*PORT_SIZE - (size > 0 ? COMPONENT_HEADER_HEIGHT : 0)) / (this._inputs.length+1);
         for (var i in this._inputs) {
             var index = parseInt(i);
             var input = this._inputs[i];
-            this.inputs[input.name] = new Flow.Port(input.name, 'input', 0, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'in');
+            this.inputs[input.name] = new Flow.Port(input.name, 'input', 0, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + (size > 0 ? COMPONENT_HEADER_HEIGHT : 0), 'in');
             this.inputs[input.name].component = this;
             this.shape.add(this.inputs[input.name].shape);
-            this.shape.add(this.inputs[input.name].text(this));
+            if (this.size > 0) {
+                this.shape.add(this.inputs[input.name].text(this));
+            }
         }
     }
 
     if (this._outputs.length > 0) {
-        var offset = (this.height - (this._outputs.length)*PORT_SIZE - COMPONENT_HEADER_HEIGHT) / (this._outputs.length+1);
+        var offset = (this.height - (this._outputs.length)*PORT_SIZE - (size > 0 ? COMPONENT_HEADER_HEIGHT : 0)) / (this._outputs.length+1);
         for (var i in this._outputs) {
             var index = parseInt(i);
             var output = this._outputs[i];
-            this.outputs[output.name] = new Flow.Port(output.name, 'output', this.width, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + COMPONENT_HEADER_HEIGHT, 'out')
+            this.outputs[output.name] = new Flow.Port(output.name, 'output', this.width, offset*(index+1) + index*PORT_SIZE+PORT_SIZE/2 + (size > 0 ? COMPONENT_HEADER_HEIGHT : 0), 'out')
             this.outputs[output.name].component = this;
             this.shape.add(this.outputs[output.name].shape);
-            this.shape.add(this.outputs[output.name].text(this));
+            if (this.size > 0) {
+                this.shape.add(this.outputs[output.name].text(this));
+            }
         }
     }
 
@@ -386,7 +536,6 @@ Flow.Component.Actions.Button = function (name, icon, x) {
     this.shape.add(this.icon);
 
     this.shape.on('mouseenter', function(e) {
-        console.log('aa');
         this.background.fill(PRIMARY_COLOR);
         this.icon.fill('white');
         this.shape.draw();
@@ -399,7 +548,6 @@ Flow.Component.Actions.Button = function (name, icon, x) {
         this.shape.getStage().container().style.cursor = "default";
     }.bind(this));
     this.shape.on('click tap', function(e) {
-        console.log('click');
         if (this.callback) {
             this.callback(e)
         }

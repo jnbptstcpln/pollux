@@ -215,7 +215,10 @@ function FlowEditor(on_loaded) {
             // cancel event propagation to prevent other click listener to execute (permit to select the new node)
             event.cancelBubble = true;
             var newNode = this.add_node(node.component.id, node.shape.x()+node.component.width/2+30, node.shape.y()+node.component.height/2+30);
+            // Clone the settings
+            newNode.settings = node.settings;
             // Select the new node
+
             this.onNodeSelected(newNode.shape)
         }.bind(this))
         node.set_action('remove', function(event) {
@@ -334,6 +337,7 @@ function FlowEditor(on_loaded) {
         if (this.selectedNode) {
             this.selectedNode.unselect()
             this.selectedNode = null;
+            this.clear_rightbar(true);
         }
         if (this.selectedLink) {
             this.selectedLink.unselect()
@@ -483,21 +487,21 @@ function FlowEditor(on_loaded) {
 
     $(document).on('click', function (e) {
         var target = $(e.target);
-        if (!target.parent('#canvas').exists()) {
-            this.clear_selection();
-        }
-    }.bind(this));
-
-    $(document).on('click', function (e) {
-        var target = $(e.target);
-        if (!target.parent('#canvas').exists()) {
+        if (
+            !target.parent('#canvas').exists() &&
+            !target.parent('#toggle-rightbar').exists() &&
+            !target.matches('.rightbar') &&
+            !target.parent('.rightbar').exists()) {
             this.clear_selection();
         }
     }.bind(this));
 
     $(document).on('keydown', function (e) {
         if (e.code === "Backspace" || e.code === "Delete") {
-            this.onDeleteSelected();
+            // Avoid capturing DELETE while editing an input field
+            if (e.target.nodeName !== "INPUT") {
+                this.onDeleteSelected();
+            }
         }
         if (e.code === "Escape") {
             if (this.mode === "link") {
@@ -702,6 +706,26 @@ function FlowEditor(on_loaded) {
         }
     }
 
+    this.clear_rightbar = function (draw_flow_settings) {
+        Rightbar = $('#editor > .layout .rightbar');
+        if (!draw_flow_settings) {
+            return Rightbar.html('');
+        } else {
+            Rightbar.html('');
+            var form = Form.create("<div class='header'><h3>Processus</h3><h2>Réglages</h2></div>");
+
+            // Common properties
+            var common = Form.fieldset("Informations générales");
+            common.append(Form.input("name", "Nom", "text", this.flow.settings["name"] || "",
+                function(name, value) {
+
+                }
+            ))
+            form.append(common);
+            return Rightbar.append(form);
+        }
+    }
+
     /**
      * ===== CALLBACK =====
      */
@@ -715,6 +739,7 @@ function FlowEditor(on_loaded) {
             this.clear_selection();
             this.selectedNode = this.flow.nodes[shape.id()];
             this.selectedNode.select();
+            this.selectedNode.build_settings_form(this.clear_rightbar());
             this.draw();
         }
     }
@@ -732,6 +757,7 @@ function FlowEditor(on_loaded) {
         if (this.selectedNode) {
             this.remove_node(this.selectedNode.id);
             this.selectedNode = null;
+            this.clear_rightbar(true);
         }
         if (this.selectedLink) {
             this.remove_sublink(this.selectedLink.selectedLinkId);
@@ -746,6 +772,7 @@ function FlowEditor(on_loaded) {
      */
     this.open = function (flowData) {
 
+        this.clear_rightbar();
         // Wait for the library to be loaded
         if (this.library.loading) {
             this.show_loading_screen();
@@ -769,7 +796,14 @@ function FlowEditor(on_loaded) {
             var nodeData = flowData.nodes[i];
             var x = flowData.positions[nodeData.id].x || 0;
             var y = flowData.positions[nodeData.id].y || 0;
-            nodes[nodeData.id] = new Flow.Node(nodeData.id, this.library.get(nodeData.component), nodeData, x, y);
+
+            // Create settings
+            var settings = {};
+            Object.assign(settings, nodeData);
+            delete settings["id"];
+            delete settings["component"];
+
+            nodes[nodeData.id] = new Flow.Node(nodeData.id, this.library.get(nodeData.component), settings, x, y);
         }
 
         for (var i in flowData.links) {
@@ -784,7 +818,8 @@ function FlowEditor(on_loaded) {
             links[linkData.source] = new Flow.Link(source, targets);
         }
 
-        this.load(new Flow(nodes, links))
+        this.load(new Flow(nodes, links, flowData["settings"]))
+        this.clear_rightbar(true);
     }
 
     /**
