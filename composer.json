@@ -1,0 +1,8 @@
+{
+    "require": {
+        "twig/twig": "^2.6"
+    },
+    "autoload": {
+        "psr-4": {"CPLN\\": "src/", "Plexus\\": "vendor/beardedbyte/plexus/src/"}
+    }
+}
