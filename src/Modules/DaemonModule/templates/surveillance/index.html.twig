@@ -1,0 +1,64 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Liste des daemons{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            {% if archive %}
+                <li>Archive des daemons</li>
+            {% else %}
+                <li>Daemons en cours d'exécution</li>
+            {% endif %}
+        </ul>
+
+        <div class="box mt-20">
+            {% if archive %}
+                <h2 class="title">Archives</h2>
+            {% else %}
+                <h2 class="title">Instances</h2>
+            {% endif %}
+
+            <table class="table fulgur-searchtable fullwidth td-center">
+                <thead>
+                    <tr>
+                        <th>Statut</th>
+                        <th class="control">Nom</th>
+                        <th class="control">Identifiant</th>
+                        <th class="control">Machine</th>
+                        {% if archive %}
+                            <th>Arrêtée depuis</th>
+                            <th style="width: 150px"><a class="button primary" href="{{ route_url('daemon-surveillance-index') }}">Accéder aux instances en cours</a></th>
+                        {% else %}
+                            <th style="width: 150px"><a class="button primary" href="{{ route_url('daemon-surveillance-archive') }}">Accéder aux archives</a></th>
+                        {% endif %}
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for daemon in daemons %}
+                        <tr>
+                            <td>{{ daemon.state|to_html }}</td>
+                            <td>{{ daemon.name }}</td>
+                            <td>{{ daemon.instance_id|slice(0, 10) }}</td>
+                            <td>{{ daemon.machine_name }}</td>
+                            {% if archive %}
+                                <td>{{ daemon.last_update|date('Y/m/d H:i:s') }}</td>
+                                <td><a href="{{ route_url('daemon-surveillance-archive-details', daemon.instance_id) }}"><i class="far fa-info-circle"></i></a></td>
+                            {% else %}
+                                <td><a href="{{ route_url('daemon-surveillance-details', daemon.instance_id) }}"><i class="far fa-info-circle"></i></a></td>
+                            {% endif %}
+
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="{% if archive %}6{% else %}5{% endif %}" class="text-center">Aucune instance en cours d'exécution</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

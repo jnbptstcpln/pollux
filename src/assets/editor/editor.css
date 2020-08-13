@@ -18,7 +18,7 @@
 
 #editor {
     position: relative;
-    --rightbar-width: 300px;
+    --rightbar-width: 350px;
     --leftbar-width: 300px;
 }
 
@@ -225,7 +225,12 @@
 }
 .rightbar > form > fieldset {
     padding: 20px;
-    background-color: #f7f7f7;
+    background-color: #fbfbfb;
+    margin-bottom: 10px;
+}
+.rightbar > form > fieldset > p {
+    margin: 0 0 10px;
+    font-size: 0.8em;
 }
 .rightbar > form > div.header {
     text-align: center;
@@ -239,6 +244,9 @@
     color: #aaa;
     margin: 0;
     font-size: 12px;
+}
+.rightbar > form label {
+    text-transform: uppercase;
 }
 
 /*

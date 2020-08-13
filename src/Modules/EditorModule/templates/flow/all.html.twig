@@ -1,0 +1,64 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Bibliothèque des processus{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            <li>Processus</li>
+        </ul>
+
+        <div class="box mt-20" id="shortcuts">
+            <h2 class="title">Raccourcis</h2>
+            <div class="grid wrap items" style="--item-width: 125px;">
+
+                    <div class="item">
+                        <a href="{{ route_url('flow-instance-all') }}">
+                            <div class="button primary">
+                                <i class="fad fa-cogs"></i>
+                            </div>
+                            <span>Liste des<br>instances</span>
+                        </a>
+                    </div>
+
+                    <div class="item">
+                        <a href="{{ route_url('flow-instance-create1') }}">
+                            <div class="button primary">
+                                <i class="fad fa-plus-circle"></i>
+                            </div>
+                            <span>Créer une<br>instance</span>
+                        </a>
+                    </div>
+
+            </div>
+        </div>
+
+
+        <div class="box mt-20">
+            <h2 class="title">Bibliothèque de processus</h2>
+            <table class="table fulgur-searchtable fullwidth td-center">
+                <thead>
+                    <tr>
+                        <th class="control">Nom</th>
+                        <th>Dernière modification</th>
+                        <th style="width: 150px"><a class="button primary fulgur-postlink" href="{{ route_url("editor-flow-add") }}">Créer processus...</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for flow in flows %}
+                        <tr>
+                            <td>{{ flow.name }}</td>
+                            <td>{{ flow.last_update|since }}</td>
+                            <td>
+                                <a class="ms-5" target="_blank" href="{{ route_url('editor-flow-edit', flow.identifier) }}"><i class="far fa-edit"></i></a>
+                                <a class="ms-5" target="_blank" href="{{ route_url('flow-instance-create2', flow.identifier) }}"><i class="far fa-play"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

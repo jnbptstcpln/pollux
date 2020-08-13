@@ -12,6 +12,8 @@ function FlowEditor(on_loaded) {
     this.states_undo = [];
     this.states_redo = [];
 
+    this.onexport = null;
+
     // Load component librairies
     this.library = new Library();
     this.library.load(function () {
@@ -225,6 +227,7 @@ function FlowEditor(on_loaded) {
             // cancel event propagation to prevent other click listener to execute
             event.cancelBubble = true;
             this.remove_node(node.id);
+            this.clear_rightbar(true);
         }.bind(this))
         node.set_action('infos', function(event) {
             // cancel event propagation to prevent other click listener to execute
@@ -564,7 +567,11 @@ function FlowEditor(on_loaded) {
 
     $("#export").on('click', function (event) {
         event.preventDefault();
-        console.log(this.flow.export());
+        if (this.onexport) {
+            this.onexport(this.flow.export());
+        } else {
+            console.log(this.flow.export());
+        }
     }.bind(this));
 
     $("#undo").on('click', function (event) {
@@ -718,10 +725,26 @@ function FlowEditor(on_loaded) {
             var common = Form.fieldset("Informations générales");
             common.append(Form.input("name", "Nom", "text", this.flow.settings["name"] || "",
                 function(name, value) {
-
-                }
+                    this.flow.settings[name] = value;
+                }.bind(this)
+            ));
+            common.append(Form.textarea("description", "Description", this.flow.settings["description"] || "",
+                function(name, value) {
+                    this.flow.settings[name] = value;
+                }.bind(this)
             ))
             form.append(common);
+
+            // Environement
+            var environment = Form.fieldset("Environnement");
+            environment.append(Form.p("Déclarer ci dessous toutes les variables qui seront utilisées en paramètre de ce processus, séparées par des \";\""))
+            environment.append(Form.textarea("environment", "Variables", this.flow.settings["environment"] || "",
+                function(name, value) {
+                    this.flow.settings[name] = value;
+                }.bind(this)
+            ))
+            form.append(environment);
+
             return Rightbar.append(form);
         }
     }

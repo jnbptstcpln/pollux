@@ -1,0 +1,168 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Daemon : {{ daemon.instance_id|slice(0, 10) }}{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            {% if archive or daemon.state == "state_dead" %}
+                <li><a href="{{ route_url('daemon-surveillance-archive') }}">Archive des daemons</a></li>
+            {% else %}
+                <li><a href="{{ route_url('daemon-surveillance-index') }}">Daemons</a></li>
+            {% endif %}
+            <li>{{ daemon.instance_id|slice(0, 10) }}</li>
+        </ul>
+
+        <div class="box mt-20">
+            <h2 class="title">Caractéristiques</h2>
+
+            <div class="max-w-1000 ms-auto p-20 mb-30" style="border-radius: 10px; border: 2px #eeeeee solid">
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">État actuel :</h4>
+                <p style="margin: 0" id="daemon-state">
+                    {{ daemon.state|to_html }}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Nom :</h4>
+                <p style="margin: 0">
+                    {{ daemon.name }}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Machine :</h4>
+                <p style="margin: 0">
+                    {{daemon.machine_name }} <span class="text-muted">({{ daemon.machine }})</span>
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Identifiant de l'instance</h4>
+                <p style="margin: 0">
+                    {{ daemon.instance_id|slice(0, 10) }}<span class="text-muted">{{ daemon.instance_id|slice(10) }}</span>
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Paramètres</h4>
+                <pre style="margin: 0" class="fulgur-json">
+                    {{ daemon.settings }}
+                </pre>
+            </div>
+        </div>
+
+        <div class="box mt-20">
+            <h2 class="title">Processus associés</h2>
+
+            <table class="table fullwidth td-center" id="daemon-instances">
+                <thead>
+                <tr>
+                    <th style="width: 200px">Statut</th>
+                    <th>Instance</th>
+                    <th>Lancé</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for instance in instances %}
+                    <tr>
+                        <td>{{ instance.state|to_html }}</td>
+                        <td><a href="{{ route_url('flow-instance-details', instance.identifier) }}">{{ instance.flow.name }} : {{ instance.identifier|slice(0, 10) }}</a></td>
+                        <td>{{ instance.started_on|since }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucun processus n'a été associé à ce deamon</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box mt-20">
+            <h2 class="title">Logs</h2>
+
+            <table class="table fullwidth" id="daemon-logs">
+                <thead>
+                    <tr>
+                        <th style="width: 250px" class="text-center">Date</th>
+                        <th class="text-left">Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td class="text-center">{{ log.created_on }}</td>
+                            <td class="text-left">{{ log.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block js %}
+    {{ parent() }}
+    {% if daemon.state != "state_dead" %}
+        <script>
+            {% if logs %}
+            var log_index = {{ logs|first.id }};
+            {% else %}
+            var log_index = 0;
+            {% endif %}
+
+            function update() {
+                Fulgur.api.get(
+                    "{{ route_url("daemon-surveillance-status", daemon.instance_id) }}",
+                    {
+                        log_index: log_index
+                    },
+                    function(rep) {
+                        if (rep.success) {
+                            var payload = rep.payload;
+                            for (var i in payload.daemon) {
+                                var el = $('#daemon-'+i);
+                                el.height(el.height());
+                                switch (i) {
+                                    case "environment":
+                                        el.html(payload.daemon[i]).json();
+                                        break;
+                                    default:
+
+                                        el.html(payload.daemon[i]);
+                                }
+                                el.style('height', null);
+                            }
+                            var logs = $('#daemon-logs tbody');
+                            for (var i = payload.logs.length-1; i>=0; i--) {
+                                if (i == 0) {
+                                    log_index = payload.logs[i].id;
+                                }
+                                var tr = $.DOM.create("tr").html(
+                                    '<td class="text-center">{0}</td><td class="text-left">{1}</td>'
+                                        .format(
+                                            payload.logs[i].created_on,
+                                            payload.logs[i].message
+                                        )
+                                )
+                                logs._DOMElement.prepend(tr._DOMElement);
+                            }
+
+                            if (payload.instances.length > 0) {
+                                var instances = $('#daemon-instances tbody');
+                                var instances_container = instances.parent('div');
+                                instances_container.height(instances_container.height());
+                                instances.html('');
+                                for (var j in payload.instances) {
+                                    instances.append(
+                                        "<tr><td>{state}</td><td>{name}</td><td>{started_since}</td></tr>"
+                                            .format(
+                                                payload.instances[j]
+                                            )
+                                    );
+                                }
+                                instances_container.style('height', null);
+                            }
+
+                        } else {
+                            console.log(rep);
+                        }
+                        setTimeout(update, 1000);
+                    }
+                )
+            }
+            setTimeout(update, 1000);
+        </script>
+    {% endif %}
+{% endblock %}

@@ -12,9 +12,10 @@ function Library() {
         this.error = false;
         this.components = {};
         this.modules = {};
-        $.GET('components.php')
+        $.GET('/api/editor/library/components')
             .success(function (response) {
-                var components = JSON.parse(response.text);
+                var rep = JSON.parse(response.text);
+                components = rep.payload;
                 for (var i in components) {
                     this.components[components[i].id] = components[i];
                     var part = this.components[components[i].id].id.split(".");

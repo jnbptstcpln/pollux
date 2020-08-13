@@ -12,3 +12,13 @@ Form.input = function (name, label, type, value, oninput) {
     });
     return div;
 }
+Form.textarea = function (name, label, value, oninput) {
+    var div = $.DOM.create("div").addClass("field").html("<label>{0}</label><textarea name='{1}'>{2}</textarea>".format(label, name, value));
+    div.find('textarea').on('input', function(e) {
+        oninput(e.element.attr('name'), e.element.get('value'));
+    });
+    return div;
+}
+Form.p = function (html) {
+    return $.DOM.create("p").html(html);
+}
