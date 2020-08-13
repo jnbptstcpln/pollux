@@ -19,6 +19,17 @@ class Log(Component):
         """
         self.flow.log(value)
 
+class Sleep(Component):
+    def func(self, value):
+        """
+        :param value:string
+        :return value:string
+        :setting duration:float
+        """
+        import time
+        time.sleep(float(self.settings.get("duration", "1").replace(',', '.')))
+        return value
+
 
 class Exit(Component):
     def func(self, value):
