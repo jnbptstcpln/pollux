@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+    <!-- Basic Page Needs ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <meta charset="utf-8">
+    <title>{% block page_title %}{% endblock %}</title>
+
+    <!-- Mobile Specific Metas ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    {% block meta %}{% endblock %}
+
+    <!-- Fonts ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <link href="https://fonts.googleapis.com/css?family=Raleway:300,400,500,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+    <!-- CSS ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <link rel="stylesheet" href="/static/fontawesome/css/fontawesome.min.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/normalize/normalize.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/aquila-light/aquila-light.css?v=1.0.2">
+    <link rel="stylesheet" href="{{ asset_url('fulgur:f-extensions.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('pollux:theme.css') }}">
+    {% block css %}{% endblock %}
+    {% block head_js %}{% endblock %}
+
+</head>
+<body>
+{% block body %}{% endblock %}
+<!-- End Document ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+<script src="/static/fontawesome/js/fontawesome.min.js?v=1.0.2"></script>
+<script src="/static/fontawesome/js/all.min.js?v=1.0.2"></script>
+<script src="/static/fulgur/fulgur.min.js?v=1.0.2"></script>
+<script>
+    $ = Fulgur;
+</script>
+<script src="{{ asset_url('fulgur:utils.js') }}"></script>
+<script src="{{ asset_url('fulgur:f-extensions.js') }}"></script>
+<script src="{{ asset_url('fulgur:bootstrap.js') }}"></script>
+<script src="{{ asset_url('pollux:theme.js') }}"></script>
+{% block js %}{% endblock %}
+</body>
+</html>
