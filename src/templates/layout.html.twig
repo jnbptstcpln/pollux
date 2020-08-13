@@ -1,0 +1,66 @@
+{% extends "/base.html.twig" %}
+
+{% block css %}
+    <link rel="stylesheet" href="{{ asset_url('pollux:public.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('pollux:member.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('pollux:admin.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="topbar overlay">
+        <div class="leftbar-toggle">
+            <a href="#" id="toggle-leftbar"><i class="fas fa-bars"></i></a>
+        </div>
+
+        <div class="buttons">
+            {#<div class="icon">
+                <a href="" title=""><i class="fas fa-globe"></i></a>
+            </div>#}
+        </div>
+    </div>
+
+    <div class="layout" id="main-layout">
+        <script>
+            // Set the leftbar mode
+            if (window.innerWidth >= 800) {
+                document.getElementById('main-layout').setAttribute('data-leftbar', localStorage.getItem('admin-leftbar') || 'full');
+            } else {
+                document.getElementById('main-layout').setAttribute('data-leftbar', 'mini');
+            }
+        </script>
+
+        <div class="leftbar overlay">
+
+            <ul class="menu">
+
+                <li {% if lefbarnav_active == 'flow' %} class="active"{% endif %}>
+                    <a href="{{ route_url('editor-flow-all') }}" title="Processus">
+                        <span class="icon"><i class="fas fa-project-diagram"></i></span>
+                        <span class="menu-label">Processus</span>
+                    </a>
+                </li>
+
+                <li {% if lefbarnav_active == 'daemon' %} class="active"{% endif %}>
+                    <a href="{{ route_url('daemon-surveillance-index') }}" title="Instances">
+                        <span class="icon"><i class="fas fa-server"></i></span>
+                        <span class="menu-label">Daemons</span>
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        <div class="wrapper">
+            <div class="content">
+                <div style="max-width: 2000px; margin: auto">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{{ asset_url('pollux:admin.js') }}"></script>
+{% endblock %}

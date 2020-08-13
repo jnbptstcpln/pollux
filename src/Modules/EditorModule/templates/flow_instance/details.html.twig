@@ -1,0 +1,157 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Instance : {{ instance.identifier|slice(0, 10) }}{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            <li><a href="{{ route_url('editor-flow-all') }}">Bibliothèque des processus</a></li>
+            <li><a href="{{ route_url('flow-instance-all') }}">Instances</a></li>
+            <li>{{ instance.identifier|slice(0, 10) }}</li>
+        </ul>
+
+        <div class="box mt-20">
+            <h2 class="title">Processus</h2>
+
+            <div class="bg-primary p-20 mb-30" style="color: white; border-radius: 10px">
+                <h3 style="font-size: 2em; margin: 10px 0 10px">{{ instance.flow.name }}</h3>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Description</h4>
+                <p style="margin: 0">
+                    {% if instance.flow.settings.description %}
+                        {{ instance.flow.settings.description|nl2br }}
+                    {% else %}
+                        <span class="text-muted">Aucune description disponible pour ce processus</span>
+                    {% endif %}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'environnement paramétrables</h4>
+                <p style="margin: 0">
+                    {% if instance.flow.settings.environment|length %}
+                        {% set variables = instance.flow.settings.environment|split(";") %}
+                        {% spaceless %}
+                            {% for variable in variables %}
+                                {% if variable %}<small class="badge badge-white">{{ variable }}</small>{% endif %}
+                            {% endfor %}
+                        {% endspaceless %}
+                    {% else %}
+                        <span class="text-muted">Aucune variable n'a été déclarée paramétrable</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="box mt-20">
+            <h2 class="title">Instance</h2>
+
+            <div class="p-20 mb-30" style="border-radius: 10px; border: 2px #eeeeee solid">
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">État actuel :</h4>
+                <p style="margin: 0" id="instance-state">
+                    {{ instance.state|to_html }}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Daemon chargé de l'exécution</h4>
+                <p style="margin: 0" id="instance-daemon_identifier">
+                    {% if instance.daemon_identifier %}
+                        <a target="_blank" href="{{ route_url("daemon-surveillance-details", instance.daemon.instance_id) }}">{{ instance.daemon.name }}</a>
+                    {% else %}
+                        <span class="text-muted">L'exécution n'a pas encore démarré</span>
+                    {% endif %}
+
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Identifiant de l'instance</h4>
+                <p style="margin: 0" id="instance-identifier">
+                    {{ instance.identifier|slice(0, 10) }}<span class="text-muted">{{ instance.identifier|slice(10) }}</span>
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Environnement d'exécution</h4>
+                <pre style="margin: 0" class="fulgur-json" id="instance-environment">
+                    {% if instance.daemon_identifier %}
+                        {{ instance.environment }}
+                    {% else %}
+                        {{ instance.environment_initial }}
+                    {% endif %}
+                </pre>
+            </div>
+
+        </div>
+
+        <div class="box mt-20">
+            <h2 class="title">Logs</h2>
+
+            <table class="table fullwidth" id="instance-logs">
+                <thead>
+                    <tr>
+                        <th style="width: 250px" class="text-center">Date</th>
+                        <th class="text-left">Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td class="text-center">{{ log.created_on }}</td>
+                            <td class="text-left">{{ log.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block js %}
+    {{ parent() }}
+    {% if instance.state != "state_completed" and instance.state != "state_error" %}
+        <script>
+            {% if logs %}
+                var log_index = {{ logs|first.id }};
+            {% else %}
+                var log_index = 0;
+            {% endif %}
+
+            function update() {
+                Fulgur.api.get(
+                    "{{ route_url("flow-instance-status", instance.identifier) }}",
+                    {
+                        log_index: log_index
+                    },
+                    function(rep) {
+                        if (rep.success) {
+                            var payload = rep.payload;
+                            for (var i in payload.instance) {
+                                var el = $('#instance-'+i);
+                                el.height(el.height());
+                                switch (i) {
+                                    case "environment":
+                                        el.html(payload.instance[i]).json();
+                                        break;
+                                    default:
+
+                                        el.html(payload.instance[i]);
+                                }
+                                el.style('height', null);
+                            }
+                            var logs = $('#instance-logs tbody');
+                            for (var i = payload.logs.length-1; i>=0; i--) {
+                                if (i == 0) {
+                                    log_index = payload.logs[i].id;
+                                }
+                                var tr = $.DOM.create("tr").html(
+                                    '<td class="text-center">{0}</td><td class="text-left">{1}</td>'
+                                        .format(
+                                            payload.logs[i].created_on,
+                                            payload.logs[i].message
+                                        )
+                                )
+                                logs._DOMElement.prepend(tr._DOMElement);
+                            }
+                        } else {
+                            console.log(rep);
+                        }
+                        setTimeout(update, 1000);
+                    }
+
+                )
+            }
+            setTimeout(update, 1000);
+        </script>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pollux - Editeur</title>
+
+    <!-- Mobile Specific Metas ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- Fonts ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,500,700&display=swap" rel="stylesheet">
+
+    <!-- CSS ––––––––––––––––––––––––––––––––––––––––––––––––––-->
+    <link rel="stylesheet" href="/static/normalize/normalize.css">
+    <link rel="stylesheet" href="/static/fontawesome/css/fontawesome.min.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/fontawesome/css/all.min.css?v=1.0.2">
+    <link rel="stylesheet" href="/static/aquila-light/aquila-light.css?v=1.0.2">
+    <link rel="stylesheet" href="{{ asset_url('editor:theme.css') }}">
+    <link rel="stylesheet" href="{{ asset_url('editor:editor.css') }}">
+</head>
+<body>
+    <div class="topbar overlay">
+        <div class="leftbar-toggle">
+            <a href="#" id="toggle-leftbar" title="Afficher ou masquer la bibliothèque des composants"><i class="fas fa-layer-plus"></i></a>
+        </div>
+
+        <div class="buttons">
+            <div class="icon">
+                <a href="#" id="export" title="Sauvegarder les changements"><i class="fas fa-cloud-upload"></i></a>
+            </div>
+        </div>
+
+        <h3>Editeur de processus</h3>
+
+        <div class="buttons">
+            <div class="icon">
+                <a href="{{ route_url("editor-flow-download", flow.identifier) }}" id="download" title="Télécharger le processus"><i class="fas fa-download"></i></a>
+            </div>
+            <div class="icon">
+                <a href="{{ route_url("flow-instance-create2", flow.identifier) }}" target="_blank" id="download" title="Exécuter le processus"><i class="fas fa-play"></i></a>
+            </div>
+            <div class="icon">
+                <a href="#" id="toggle-rightbar" title="Afficher ou masquer les options"><i class="fas fa-cogs"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="layout" id="main-layout">
+        <div class="wrapper">
+            <div class="content">
+                <div id="editor">
+                    <div class="layout" id="editor-layout">
+
+                        <div class="leftbar overlay">
+                            <ul class="menu">
+                                <li>
+                                    <a title="Recherche d'un élément">
+                                        <span class="icon"><i class="fas fa-search"></i></span>
+                                        <span class="menu-label">Recherche</span>
+                                    </a>
+                                    <div style="--height: 350px">
+                                        <form class="p-10">
+                                            <div class="field max-w-250  ms-auto">
+                                                <input id="search-element" type="search" placeholder="Nom du composant...">
+                                            </div>
+                                            <ul id="search-results" class="component-list"></ul>
+                                        </form>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="canvas" id="canvas"></div>
+
+                        <div class="rightbar overlay"></div>
+
+                        <div class="controls">
+                            <a id="undo" href="#" title="Annuler la dernière action"><i class="far fa-undo"></i></a>
+                            <a id="redo" href="#" title="Rétablir la dernière annulation"><i class="far fa-redo"></i></a>
+                        </div>
+
+                        <div class="zoom">
+                            <a id="toggle-move" href="#"><i class="far fa-arrows-alt"></i></a>
+                            <a id="zoom-out" href="#"><i class="far fa-search-minus"></i></a>
+                            <a id="zoom-in" href="#"><i class="far fa-search-plus"></i></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set the leftbar mode
+        document.getElementById('editor-layout').setAttribute('data-leftbar', localStorage.getItem('leftbar') || 'full');
+        // Set sidebar mode
+        document.getElementById('editor-layout').setAttribute('data-rightbar', localStorage.getItem('rightbar') || 'hide');
+    </script>
+
+    <script src="/static/fontawesome/js/fontawesome.min.js?v=1.0.2"></script>
+    <script src="/static/fontawesome/js/all.min.js?v=1.0.2"></script>
+    <script src="/static/konva/konva.js"></script>
+    <script src="/static/fulgur/fulgur.min.js?v=1.0.2"></script>
+    <script>
+        $ = Fulgur;
+    </script>
+    <script src="{{ asset_url('fulgur:utils.js') }}"></script>
+    <script src="{{ asset_url('fulgur:f-extensions.js') }}"></script>
+    <script src="{{ asset_url('fulgur:bootstrap.js') }}"></script>
+    <script src="{{ asset_url('editor:flow.js') }}"></script>
+    <script src="{{ asset_url('editor:flow-editor.js') }}"></script>
+    <script src="{{ asset_url('editor:form.js') }}"></script>
+    <script src="{{ asset_url('editor:library.js') }}"></script>
+    <script>
+        var Editor = new FlowEditor();
+
+        Editor.onexport = function(flowData) {
+            var button = $('#export');
+            if (button.attr('state') !== 'saving') {
+                button.attr('state', 'saving');
+
+                var html = button.html();
+                button.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.POST(
+                    "{{ route_url('editor-library-flow', flow.identifier) }}",
+                    {
+                        scheme: JSON.stringify(flowData)
+                    }
+                ).success(function (response) {
+                    button.attr('state', null);
+                    button.html('<i class="fas fa-file-check"></i>');
+                    setTimeout(function() {
+                        if (button.attr('state') !== 'saving') {
+                            button.html(html);
+                        }
+                    }, 5000)
+                }).error(function (response) {
+                    button.attr('state', null);
+                    button.html(html);
+                    alert("Une erreur est survenue lors de l'enregistrement des modications");
+                }).send()
+                ;
+            }
+        }
+
+        Editor.show_loading_screen();
+        $.GET("{{ route_url('editor-library-flow', flow.identifier) }}")
+            .success(function (response) {
+                var rep = JSON.parse(response.text);
+                flowData = rep.payload;
+                console.log(flowData);
+                Editor.open(flowData);
+            })
+            .error(function (response) {
+                alert("Une erreur est survenue lors de l'ouverture du processus.");
+            })
+            .send()
+        ;
+
+    </script>
+</body>
+</html>

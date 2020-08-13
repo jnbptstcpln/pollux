@@ -12,7 +12,7 @@ namespace Plexus;
 use Plexus\DataType\Collection;
 use Plexus\DataType\CollectionIterator;
 
-class ModelCollection {
+class ModelCollection implements \IteratorAggregate {
 
     /**
      * @var array
@@ -73,5 +73,12 @@ class ModelCollection {
             $models[] = $model->toArray($fields);
         }
         return $models;
+    }
+
+    /**
+     * @return CollectionIterator|\Traversable
+     */
+    public function getIterator() {
+        return new CollectionIterator(new Collection($this->toArray()));
     }
 }

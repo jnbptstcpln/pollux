@@ -1,0 +1,38 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Bibliothèque des processus{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            <li><a href="{{ route_url('editor-flow-all') }}">Bibliothèque des processus</a></li>
+            <li>Instances</li>
+        </ul>
+
+        <div class="box mt-20">
+            <h2 class="title">Instances des processus</h2>
+            <table class="table fulgur-searchtable fullwidth td-center">
+                <thead>
+                    <tr>
+                        <th class="control">Identifiant</th>
+                        <th class="control">Processus</th>
+                        <th>Statut</th>
+                        <th style="width: 150px"><a class="button primary" href="{{ route_url("flow-instance-create1") }}">Démarrer une instance...</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for instance in instances %}
+                        <tr>
+                            <td>{{ instance.identifier|slice(0,10) }}</td>
+                            <td>{{ instance.flow.name }}</td>
+                            <td>{{ instance.state|to_html }}</td>
+                            <td><a href="{{ route_url('flow-instance-details', instance.identifier) }}"><i class="far fa-info-circle"></i></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}
