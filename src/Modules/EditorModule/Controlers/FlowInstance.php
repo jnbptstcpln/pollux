@@ -3,6 +3,7 @@
 namespace CPLN\Modules\EditorModule\Controlers;
 
 
+use CPLN\Modules\DaemonModule\Services\DaemonService;
 use CPLN\Modules\EditorModule\Services\FlowInstanceLogService;
 use CPLN\Modules\EditorModule\Services\FlowInstanceService;
 use CPLN\Modules\EditorModule\Services\FlowService;
@@ -27,6 +28,8 @@ class FlowInstance extends Controler {
     use ControlerAPI;
 
     public function all() {
+
+        DaemonService::fromRuntime($this)->update_daemon_table();
 
         $instanceService = FlowInstanceService::fromRuntime($this);
         $instances = $instanceService->get_recent();
@@ -94,6 +97,9 @@ class FlowInstance extends Controler {
             $form->fillWithArray($this->paramsPost());
             if ($form->validate()) {
                 $environment = parse_ini_string($form->getValueOf("environment"));
+                if (count($environment) == 0) {
+                    $environment = new \stdClass();
+                }
 
                 $instanceService = FlowInstanceService::fromRuntime($this);
                 $instance_identifier = $instanceService->create($flow_identifier, $environment);
@@ -110,6 +116,8 @@ class FlowInstance extends Controler {
 
     public function details($identifier) {
 
+        DaemonService::fromRuntime($this)->update_daemon_table();
+
         $instanceService = FlowInstanceService::fromRuntime($this);
         $instance = $instanceService->get($identifier);
 
@@ -125,6 +133,8 @@ class FlowInstance extends Controler {
 
     public function status($identifier) {
 
+        DaemonService::fromRuntime($this)->update_daemon_table();
+
         $instanceService = FlowInstanceService::fromRuntime($this);
         $instance = $instanceService->get($identifier);
 
@@ -136,7 +146,7 @@ class FlowInstance extends Controler {
             "instance" => [
                 "state" => Label::fromRuntime($this)->value_to_html($instance->state),
                 "daemon_identifier" =>  (strlen($instance->daemon_identifier) > 0) ? Text::format("<a target=\"_blank\" href=\"{}\">{}</a>", $this->uriFor('daemon-surveillance-details', $instance->daemon_identifier), htmlentities($instance->daemon->name)) : "<span class=\"text-muted\">L'exécution n'a pas encore démarré</span>",
-                "environment" => (strlen($instance->daemon_identifier) > 0) ? $instance->environment : $instance->initial
+                "environment" => (strlen($instance->daemon_identifier) > 0) ? $instance->environment : $instance->environment_initial
             ],
             "logs" => FlowInstanceLogService::fromRuntime($this)->get($identifier, $this->paramGet("log_index", null))->toArray()
         ]);
