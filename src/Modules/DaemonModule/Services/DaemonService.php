@@ -3,11 +3,13 @@
 namespace CPLN\Modules\DaemonModule\Services;
 
 
+use CPLN\Modules\EditorModule\Services\FlowInstanceService;
 use Plexus\AbstractRuntime;
 use Plexus\Model;
 use Plexus\ModelSelector;
 use Plexus\Service\AbstractService;
 use Plexus\Utils\Randomizer;
+use Plexus\Utils\Text;
 
 class DaemonService extends AbstractService {
 
@@ -116,6 +118,13 @@ class DaemonService extends AbstractService {
             } elseif ($daemon->state == self::STATE_UNKNOWN && time() - strtotime($daemon->last_update) > 30) {
                 $daemon->state = self::STATE_DEAD;
                 $daemon->getManager()->update($daemon);
+                $instanceService = FlowInstanceService::fromRuntime($this);
+                $instanceService->for_daemon($daemon->instance_id)->each(function (Model $instance) use ($instanceService) {
+                    $this->log("Kill instance".$instance->identifier);
+                    if ($instance->state == FlowInstanceService::STATE_RUNNING) {
+                        $instanceService->error($instance->identifier, Text::format("Arrêt du daemon {} hébergeant le processus", $instance->daemon_identifier));
+                    }
+                });
             }
         });
     }
