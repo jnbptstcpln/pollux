@@ -83,7 +83,7 @@ class FlowInstanceAPI extends Controler {
 
                 // Flow environment
                 $environment = isset($status["environment"]) ? $status["environment"] : [];
-                $instance->environment = json_encode($environment);
+                $instance->environment = $environment;
                 $instance->getManager()->update($instance);
 
             }
