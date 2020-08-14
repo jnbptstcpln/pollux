@@ -18,7 +18,7 @@
 
 #editor {
     position: relative;
-    --rightbar-width: 350px;
+    --rightbar-width: 375px;
     --leftbar-width: 300px;
 }
 
@@ -83,7 +83,7 @@
     background-color: #fafafa;
     box-sizing: content-box;
     height: 0;
-    overflow-y: auto;
+    overflow-y: scroll;
     transition: height 250ms;
 }
 #editor > .layout > .leftbar ul.menu > li.active > div {
@@ -297,4 +297,64 @@
     cursor: pointer;
     flex: auto;
     text-align: right;
+}
+
+/*
+ * DOC-MODAL
+ */
+body > .doc-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+body > .doc-modal > div {
+    border-radius: 10px;
+    background-color: white;
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 900px;
+    overflow-y: auto;
+    position: relative;
+}
+body > .doc-modal > div > i.close-button {
+    font-size: 1.5em;
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    font-style: normal;
+    cursor: pointer;
+}
+body > .doc-modal > div > i.close-button::before {
+    content: "×";
+}
+body > .doc-modal .doc-content {
+    height: 75vh;
+    max-height: 700px;
+}
+body > .doc-modal .doc-content > table {
+    width: 100%;
+}
+body > .doc-modal .doc-content > table tbody td {
+    text-align: center;
+}
+body > .doc-modal .doc-content > h2 {
+    text-align: center;
+    text-transform: uppercase;
+    display: block;
+    opacity: 0.75;
+    font-size: 0.75em;
+    margin: 0;
+}
+body > .doc-modal .doc-content > h1 {
+    text-align: center;
+    font-size: 2em;
+    margin: 10px 0 25px;
+
 }

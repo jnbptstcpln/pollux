@@ -30,7 +30,7 @@
                         {% set variables = instance.flow.settings.environment|split(";") %}
                         {% spaceless %}
                             {% for variable in variables %}
-                                {% if variable %}<small class="badge badge-white">{{ variable }}</small>{% endif %}
+                                {% if variable %}<small class="ms-5 badge badge-white">{{ variable }}</small>{% endif %}
                             {% endfor %}
                         {% endspaceless %}
                     {% else %}

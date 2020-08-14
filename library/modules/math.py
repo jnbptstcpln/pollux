@@ -1,7 +1,7 @@
 """
     :version 0.1
 """
-from ..component import Component
+from castor.flow.component import Component
 
 
 class Addition(Component):

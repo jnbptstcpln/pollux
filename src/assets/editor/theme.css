@@ -265,8 +265,8 @@ div.field label input {
     width: auto;
 }
 div.field .text-help {
-    font-size: 0.8em;
-    margin: 5px;
+    font-size: 0.75em;
+    margin: 5px 0 0;
     text-align: left;
 }
 div.field .errors {

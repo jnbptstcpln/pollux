@@ -55,7 +55,10 @@ class FlowInstanceLogService extends AbstractService {
         $log->flow_instance_identifier = $flow_instance_identifier;
         $log->message = $message;
         if ($time !== null) {
-            $log->created_on = date("Y-m-d H:i:s", intval($time));
+            $time = intval($time);
+            $seconds = floor($time/1000);
+            $millisecond = $time - $seconds*1000;
+            $log->created_on = date("Y-m-d H:i:s", intval($time/1000)).".".$millisecond;
             $logManager->insert($log);
         } else {
             $logManager->insert($log, [

@@ -1,7 +1,7 @@
 """
     :version 0.1
 """
-from ..component import Component
+from castor.flow.component import Component
 
 
 class Equals(Component):
@@ -11,6 +11,8 @@ class Equals(Component):
         :param b:float
         :return a(true):float
         :return a(false):float
+        :size 1
+        :description
         """
         if a==b:
             return a, None

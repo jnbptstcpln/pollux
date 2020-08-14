@@ -277,7 +277,8 @@ Flow.Node = function(id, component, settings, x, y) {
                             delete this.settings["inputs"][name];
                         }
 
-                    }.bind(this)
+                    }.bind(this),
+                    Doc.format(setting.description)
                 ))
             }
             form.append(fieldset)
@@ -309,7 +310,8 @@ Flow.Node = function(id, component, settings, x, y) {
                             delete this.settings[name];
                         }
 
-                    }.bind(this)
+                    }.bind(this),
+                    Doc.format(setting.description)
                 ))
             }
             form.append(fieldset)

@@ -29,7 +29,7 @@ function FlowEditor(on_loaded) {
             module = modules[i];
             var li = $.DOM.create("li");
             li.append("<a><span class=\"icon\"><i class=\"fas fa-box-open\"></i></span><span class=\"menu-label\">{0}</span></a>".format(module.toUpperCase()))
-            li.append("<div style='--height: 350px'><div class='p-10'></div></div>")
+            li.append("<div style='--height: 320px'><div class='p-10'></div></div>")
             var ul = $.DOM.create("ul").addClass("component-list");
             for (var j in this.library.modules[module]) {
                 var component = this.library.modules[module][j];
@@ -232,8 +232,7 @@ function FlowEditor(on_loaded) {
         node.set_action('infos', function(event) {
             // cancel event propagation to prevent other click listener to execute
             event.cancelBubble = true;
-            alert('La documentation sera bientôt accessible...');
-            // TODO: Implement documentation access
+            this.show_documentation(node.component.id);
         }.bind(this))
 
         this.update();
@@ -507,10 +506,11 @@ function FlowEditor(on_loaded) {
             }
         }
         if (e.code === "Escape") {
-            if (this.mode === "link") {
+            if ($('body > .doc-modal').exists()) {
+                $('body > .doc-modal').remove();
+            } else if (this.mode === "link") {
                 this.reset_link_mode();
-            }
-            if (this.mode === "move") {
+            } else if (this.mode === "move") {
                 this.reset_move_mode();
             }
         }
@@ -561,9 +561,8 @@ function FlowEditor(on_loaded) {
 
     $("#editor > .layout > .leftbar").on('click', 'ul.component-list li a.info', function (event) {
         event.preventDefault();
-        alert("La documentation sera bientôt disponible...");
-        // TODO: Implement documentation access
-    });
+        this.show_documentation(event.element.parent("span").attr('data-id'));
+    }.bind(this));
 
     $("#export").on('click', function (event) {
         event.preventDefault();
@@ -726,6 +725,7 @@ function FlowEditor(on_loaded) {
             common.append(Form.input("name", "Nom", "text", this.flow.settings["name"] || "",
                 function(name, value) {
                     this.flow.settings[name] = value;
+                    $("head title").text("Processus \"{0}\"".format(value));
                 }.bind(this)
             ));
             common.append(Form.textarea("description", "Description", this.flow.settings["description"] || "",
@@ -745,8 +745,51 @@ function FlowEditor(on_loaded) {
             ))
             form.append(environment);
 
+            // Exécution
+            var execution = Form.fieldset("Exécution");
+            execution.append(
+                Form.select(
+                    "exec_mode",
+                    "Mode d'exécution",
+                    {
+                        single: 'Chaque noeud s\'exécute une seule fois',
+                        loop: 'Chaque noeud s\'exécute en boucle',
+                    },
+                    this.flow.settings["exec_mode"] || "single",
+                    function(name, value) {
+                        this.flow.settings[name] = value;
+                    }.bind(this)
+                )
+            )
+            form.append(execution);
+
             return Rightbar.append(form);
         }
+    }
+
+    this.show_documentation = function(component_id) {
+        var component = this.library.components[component_id];
+        var docModal = $.DOM.create('div').addClass("doc-modal");
+        docModal.html("<div><i class='close-button'></i><div class='doc-content'></div></div>");
+        docModal.find('.close-button').on('click', function (e) {
+            e.preventDefault();
+            docModal.remove();
+        });
+        var docContent = docModal.find('.doc-content');
+        docContent.append("<h2>{0}</h2><h1>{1}</h1><p>{2}</p>".format(component.module, component.name, Doc.format(component.description)));
+        if (component.inputs.length > 0) {
+            docContent.append("<h3>Entrées</h3>");
+            docContent.append(Doc.inputs_table(component));
+        }
+        if (component.outputs.length > 0) {
+            docContent.append("<h3>Sorties</h3>");
+            docContent.append(Doc.outputs_table(component));
+        }
+        if (component.settings.length > 0) {
+            docContent.append("<h3>Options</h3>");
+            docContent.append(Doc.settings_table(component));
+        }
+        $("body").append(docModal);
     }
 
     /**

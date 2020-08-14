@@ -12,30 +12,36 @@ function Library() {
         this.error = false;
         this.components = {};
         this.modules = {};
-        $.GET('/api/editor/library/components')
+        $.GET('/editor/library/components')
             .success(function (response) {
                 var rep = JSON.parse(response.text);
-                components = rep.payload;
-                for (var i in components) {
-                    this.components[components[i].id] = components[i];
-                    var part = this.components[components[i].id].id.split(".");
-                    this.components[components[i].id].name = part.pop();
-                    this.components[components[i].id].module = part.join(".");
-                    if (!this.modules[this.components[components[i].id].module]) {
-                        this.modules[this.components[components[i].id].module] = [];
+                if (rep.success) {
+                    components = rep.payload;
+                    for (var i in components) {
+                        this.components[components[i].id] = components[i];
+                        var part = this.components[components[i].id].id.split(".");
+                        this.components[components[i].id].name = part.pop();
+                        this.components[components[i].id].module = part.join(".");
+                        if (!this.modules[this.components[components[i].id].module]) {
+                            this.modules[this.components[components[i].id].module] = [];
+                        }
+                        this.modules[this.components[components[i].id].module].push(this.components[components[i].id]);
                     }
-                    this.modules[this.components[components[i].id].module].push(this.components[components[i].id]);
-                }
-                this.loading = false;
-                this.loaded = true;
-                if (callback) {
-                    callback();
+                    this.loading = false;
+                    this.loaded = true;
+                    if (callback) {
+                        callback();
+                    }
+                } else {
+                    alert("Une erreur est survenue lors de la récupération de la biliothèque des composants");
+                    console.log(response);
                 }
             }.bind(this))
             .error(function (response) {
                 this.loading = false;
                 this.error = true;
                 alert("Une erreur est survenue lors de la récupération de la biliothèque des composants");
+                console.log(response);
             }.bind(this))
             .send()
         ;
@@ -67,8 +73,13 @@ function Library() {
      */
     this.search = function(value) {
         var components = [];
+        console.log(this.components);
         for (var i in this.components) {
-            if (i.hasSubString(value)) {
+            if (this.components[i].name.hasSubString(value)) {
+                components.unshift(this.components[i])
+            } else if (this.components[i].module.hasSubString(value)) {
+                components.push(this.components[i]);
+            } else if (i.hasSubString(value)) {
                 components.push(this.components[i]);
             }
         }
