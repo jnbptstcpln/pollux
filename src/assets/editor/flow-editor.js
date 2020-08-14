@@ -725,6 +725,7 @@ function FlowEditor(on_loaded) {
             common.append(Form.input("name", "Nom", "text", this.flow.settings["name"] || "",
                 function(name, value) {
                     this.flow.settings[name] = value;
+                    $("head title").text("Processus \"{0}\"".format(value));
                 }.bind(this)
             ));
             common.append(Form.textarea("description", "Description", this.flow.settings["description"] || "",
@@ -743,6 +744,24 @@ function FlowEditor(on_loaded) {
                 }.bind(this)
             ))
             form.append(environment);
+
+            // Exécution
+            var execution = Form.fieldset("Exécution");
+            execution.append(
+                Form.select(
+                    "exec_mode",
+                    "Mode d'exécution",
+                    {
+                        single: 'Chaque noeud s\'exécute une seule fois',
+                        loop: 'Chaque noeud s\'exécute en boucle',
+                    },
+                    this.flow.settings["exec_mode"] || "single",
+                    function(name, value) {
+                        this.flow.settings[name] = value;
+                    }.bind(this)
+                )
+            )
+            form.append(execution);
 
             return Rightbar.append(form);
         }
