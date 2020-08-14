@@ -17,9 +17,10 @@ class Modules extends Controler {
      * @throws \Plexus\Exception\HaltException
      */
     public function search() {
-        $module_id = $this->paramGet("value");
+        $module_id = $this->paramGet("module_id");
         $moduleService = ModuleService::fromRuntime($this);
         $modules = [];
+        $this->log($module_id);
         if ($moduleService->exists($module_id)) {
             $modules[] = $module_id;
         }
