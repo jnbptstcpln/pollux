@@ -10,6 +10,7 @@ class Component {
     public $inputs = [];
     public $outputs = [];
     public $settings = [];
+    public $requirements = [];
     public $size = 1;
     public $description = "";
 
@@ -31,6 +32,11 @@ class Component {
 
     public function addSetting($name, $type="string", $description="") {
         $this->settings[] = ['name' => $name, 'type' => $type, 'description' => $description];
+        return $this;
+    }
+
+    public function addRequirement($name) {
+        $this->requirements[] = ['name' => $name];
         return $this;
     }
 

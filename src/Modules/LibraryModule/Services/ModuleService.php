@@ -144,6 +144,11 @@ class ModuleService extends AbstractService {
                 $component->addSetting(trim($param[1]), trim($param[2]), trim($param[3]));
             }
 
+            preg_match_all("/:require (.*)/m", $componentString, $matches_requirement, PREG_SET_ORDER);
+            foreach ($matches_requirement as $param) {
+                $component->addRequirement(trim($param[1]));
+            }
+
             $components[] = $component;
         }
 
