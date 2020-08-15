@@ -113,7 +113,7 @@ class FlowInstanceService extends AbstractService {
 
     /**
      * @param string $flowIdentifier
-     * @param array $environment
+     * @param array|\stdClass $environment
      * @return string
      * @throws \Plexus\Exception\ModelException
      */
