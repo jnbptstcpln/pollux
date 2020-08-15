@@ -29,8 +29,8 @@ Form.select = function (name, label, options, value, oninput, help_text) {
     }
 
     help_text = help_text ? "<p class='text-help'>{0}</p>".format(help_text) : "";
-    var div = $.DOM.create("div").addClass("field").html("<label>{0}</label>{3}<select name='{1}'>{2}</select>".format(label, name, value, help_text));
-    div.find('textarea').on('input', function(e) {
+    var div = $.DOM.create("div").addClass("field").html("<label>{0}</label>{3}<select name='{1}'>{2}</select>".format(label, name, options_html, help_text));
+    div.find('select').on('change', function(e) {
         oninput(e.element.attr('name'), e.element.get('value'));
     });
     return div;
