@@ -50,6 +50,13 @@ class SurveillanceAPI extends \Plexus\Controler {
             $this->error(404, "Aucune instance ne correspond à votre requête.");
         }
 
+        if ($daemon->state == DaemonService::STATE_DEAD) {
+            $this->success([
+                'state' => $daemon->state,
+                'flows' => []
+            ]);
+        }
+
         $flow_instances = -1;
 
         try {
@@ -94,6 +101,7 @@ class SurveillanceAPI extends \Plexus\Controler {
         }
 
         $this->success([
+            'state' => $daemon->state,
             'flows' => $flows
         ]);
     }
