@@ -32,10 +32,13 @@ class FlowInstanceAPI extends Controler {
             $this->error(404, Text::format("Aucun processus ne correspond à {}", $flow_identifier));
         }
 
-        $environment = [];
-        $this->paramsPost()->each(function ($key, $value) use (&$environment) {
-            $environment[$key] = $value;
-        });
+        $data = json_decode(file_get_contents('php://input'));
+
+        if ($data === null) {
+            $this->error(400, 'Le format de votre requête est incorrect');
+        }
+
+        $environment = isset($data->environment) ? $data->environment : new \stdClass();
 
         $instanceService = FlowInstanceService::fromRuntime($this);
         $instance_identifier = $instanceService->create($flow_identifier, $environment);

@@ -129,17 +129,17 @@ class ModuleService extends AbstractService {
 
             $component = new Component($id, $size, $description);
 
-            preg_match_all("/:param ([^:]+):?([^:]+):?(.*)/m", $componentString, $matches_params, PREG_SET_ORDER);
+            preg_match_all("/:param ([^:\n\r]+):?([^:\n\r]+)?:?([^\n\r]+)?/m", $componentString, $matches_params, PREG_SET_ORDER);
             foreach ($matches_params as $param) {
                 $component->addInput(trim($param[1]), trim($param[2]), trim($param[3]));
             }
 
-            preg_match_all("/:return ([^:]+):?([^:]+):?(.*)/m", $componentString, $matches_return, PREG_SET_ORDER);
+            preg_match_all("/:return ([^:\n\r]+):?([^:\n\r]+)?:?([^\n\r]+)?/m", $componentString, $matches_return, PREG_SET_ORDER);
             foreach ($matches_return as $param) {
                 $component->addOuput(trim($param[1]), trim($param[2]), trim($param[3]));
             }
 
-            preg_match_all("/:setting ([^:]+):?([^:]+):?(.*)/m", $componentString, $matches_setting, PREG_SET_ORDER);
+            preg_match_all("/:setting ([^:\n\r]+):?([^:\n\r]+)?:?([^\n\r]+)?/m", $componentString, $matches_setting, PREG_SET_ORDER);
             foreach ($matches_setting as $param) {
                 $component->addSetting(trim($param[1]), trim($param[2]), trim($param[3]));
             }

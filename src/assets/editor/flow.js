@@ -278,7 +278,7 @@ Flow.Node = function(id, component, settings, x, y) {
                         }
 
                     }.bind(this),
-                    Doc.format(setting.description)
+                    Doc.format(input.description)
                 ))
             }
             form.append(fieldset)

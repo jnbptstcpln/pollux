@@ -1,4 +1,5 @@
 /.idea
+/config
 /composer.lock
 /vendor
 /log
