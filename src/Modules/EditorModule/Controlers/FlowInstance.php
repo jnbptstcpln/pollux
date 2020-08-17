@@ -18,6 +18,8 @@ use Plexus\Form;
 use Plexus\FormField\CSRFInput;
 use Plexus\FormField\SelectField;
 use Plexus\FormField\TextareaField;
+use Plexus\FormField\TextInput;
+use Plexus\FormValidator\LengthMaxValidator;
 use Plexus\Model;
 use Plexus\ModelSelector;
 use Plexus\Utils\Randomizer;
@@ -83,26 +85,41 @@ class FlowInstance extends Controler {
         $form
             ->setMethod("post")
             ->addField(new CSRFInput("flow_instance_creation2"))
-            ->addField(new TextareaField("environment", [
-                'label' => "Spécifier la valeur des différentes variables",
-                'help_text' => "Sous la forme d'une configuration .ini, key=value sur chaque ligne",
-                'attributes' => [
-                    'style' => "min-height: 100px",
-                    'placeholder' => "foo=\"bar\"",
+            ->addField(new TextInput("domain", [
+                'label' => "Domaine d'exécution de l'instance",
+                'help_text' => "Permet de spécifier sur quels daemons peut être lancée cette instance",
+                'required' => true,
+                'validators' => [
+                    new LengthMaxValidator(255)
                 ]
             ]))
         ;
 
+        foreach ($flow->settings['environment']['inputs'] as $input) {
+            $form->addField(new TextInput("flow_input_".htmlentities($input), [
+                'label' => $input,
+                'validators' => [
+                    new LengthMaxValidator(500)
+                ]
+            ]));
+        }
+
+        // Default form value
+        $form->domain->setValue("default");
+
         if ($this->method("post")) {
             $form->fillWithArray($this->paramsPost());
             if ($form->validate()) {
-                $environment = parse_ini_string($form->getValueOf("environment"));
-                if (count($environment) == 0) {
-                    $environment = new \stdClass();
+
+                $domain = $form->getValueOf("domain");
+                // Construction of the environment
+                $environment = new \stdClass();
+                foreach ($flow->settings['environment']['inputs'] as $input) {
+                    $environment->$input = $form->getValueOf("flow_input_".htmlentities($input));
                 }
 
                 $instanceService = FlowInstanceService::fromRuntime($this);
-                $instance_identifier = $instanceService->create($flow_identifier, $environment);
+                $instance_identifier = $instanceService->create($flow_identifier, $domain, $environment);
 
                 $this->redirect($this->uriFor("flow-instance-details", $instance_identifier));
             }
@@ -123,6 +140,13 @@ class FlowInstance extends Controler {
 
         if (!$instance) {
             $this->halt(404);
+        }
+
+        if ($instance->state == FlowInstanceService::STATE_QUEUED) {
+            $daemons = DaemonService::fromRuntime($this)->get_by_domain($instance->domain);
+            if ($daemons->length() == 0) {
+                $instance->warning = Text::format("Attention : aucun daemon n'est actuellement lancé dans le domaine <code>{}</code>", htmlentities($instance->domain));
+            }
         }
 
         $this->render("@EditorModule/flow_instance/details.html.twig", [

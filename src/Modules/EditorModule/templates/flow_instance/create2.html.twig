@@ -45,24 +45,50 @@
                                 <span class="text-muted">Aucune description disponible pour ce processus</span>
                             {% endif %}
                         </p>
-                        <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'environnement paramétrables</h4>
+                        <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'entrée</h4>
                         <p style="margin: 0">
-                            {% if flow.settings.environment|length %}
-                                {% set variables = flow.settings.environment|split(";") %}
-                                {% spaceless %}
-                                    {% for variable in variables %}
-                                        {% if variable %}<small class="ms-5 badge badge-white">{{ variable }}</small>{% endif %}
-                                    {% endfor %}
-                                {% endspaceless %}
-                            {% else %}
-                                <span class="text-muted">Aucune variable n'a été déclarée paramétrable</span>
-                            {% endif %}
+                            {% spaceless %}
+                                {% for input in flow.settings.environment.inputs %}
+                                    {% if input %}<small class="ms-5 badge badge-white">{{ input }}</small>{% endif %}
+                                {% else %}
+                                    <span class="text-muted">Aucune variable d'entrée pour ce processus</span>
+                                {% endfor %}
+                            {% endspaceless %}
+                        </p>
+                        <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables de sortie</h4>
+                        <p style="margin: 0">
+                            {% spaceless %}
+                                {% for output in flow.settings.environment.outputs %}
+                                    {% if output %}<small class="ms-5 badge badge-white">{{ output }}</small>{% endif %}
+                                {% else %}
+                                    <span class="text-muted">Aucune variable de sortie pour ce procesus</span>
+                                {% endfor %}
+                            {% endspaceless %}
                         </p>
                     </div>
 
-                    <div class="field">
-                        {{ form.environment|render }}
-                    </div>
+                    <fieldset class="mt-15 mb-30">
+                        <legend>Paramétrage de l'instance</legend>
+                        <div class="p-30">
+                            <div class="field">
+                                {{ form.domain|render }}
+                            </div>
+                        </div>
+                    </fieldset>
+
+
+                    {% if flow.settings.environment.inputs %}
+                        <fieldset class="mt-15 mb-30">
+                            <legend>Variables d'entrée</legend>
+                            <div class="p-30">
+                                {% for input in flow.settings.environment.inputs %}
+                                    <div class="field">
+                                        {{ form.getField("flow_input_"~input)|render }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                    {% endif %}
 
                     <div class="text-right mt-30">
                         <button type="submit" class="button primary">Créer l'instance</button>

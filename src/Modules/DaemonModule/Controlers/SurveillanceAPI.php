@@ -18,15 +18,16 @@ class SurveillanceAPI extends \Plexus\Controler {
 
     public function start() {
         $name = $this->paramPost("name");
+        $domain = $this->paramPost("domain", "default");
         $machine = $this->paramPost("machine");
         $machine_name = $this->paramPost("machine_name");
-        $settings = json_decode($this->paramPost("settings"), true);
+        $settings = json_decode($this->paramPost("settings"));
 
-        $settings = $settings !== null ? $settings : [];
+        $settings = $settings !== null ? $settings : new \stdClass();
 
         $daemonService = DaemonService::fromRuntime($this);
         try {
-            $instance_id = $daemonService->start_daemon($name, $machine, $machine_name, $settings);
+            $instance_id = $daemonService->start_daemon($name, $domain, $machine, $machine_name, $settings);
             $this->success([
                 "instance_id" => $instance_id
             ]);
@@ -88,7 +89,7 @@ class SurveillanceAPI extends \Plexus\Controler {
         if ($flow_instances >= 0 && $flow_instances < $settings->get("concurrent_execution_limit", 1)) {
             // TODO : Optimize the distribution of flow between daemon
             $instanceManager = FlowInstanceService::fromRuntime($this);
-            $queue = $instanceManager->get_queue(1);
+            $queue = $instanceManager->get_queue($daemon->domain, 1);
 
             $queue->each(function (Model $instance) use (&$flows, $daemon) {
                 $flows[] = [

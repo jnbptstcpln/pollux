@@ -70,18 +70,20 @@ class FlowInstanceService extends AbstractService {
      * @return \Plexus\ModelCollection
      * @throws \Plexus\Exception\ModelException
      */
-    public function get_queue($limit=null) {
+    public function get_queue($domain, $limit=null) {
         $instanceManager = $this->getModelManager("flow_instance");
 
         if ($limit !== null) {
             $instances = $instanceManager->select(
                 ModelSelector::where("state = :queued", ['queued' => self::STATE_QUEUED]),
+                ModelSelector::where("domain = :domain", ['domain' => $domain]),
                 ModelSelector::order("created_on", "ASC"),
                 ModelSelector::limit($limit)
             );
         } else {
             $instances = $instanceManager->select(
                 ModelSelector::where("state = :queued", ['queued' => self::STATE_QUEUED]),
+                ModelSelector::where("domain = :domain", ['domain' => $domain]),
                 ModelSelector::order("created_on", "ASC")
             );
         }
@@ -117,7 +119,7 @@ class FlowInstanceService extends AbstractService {
      * @return string
      * @throws \Plexus\Exception\ModelException
      */
-    public function create($flowIdentifier, $environment) {
+    public function create($flowIdentifier, $domain, $environment) {
         $instanceManager = $this->getModelManager("flow_instance");
 
         $identifier = sha1($flowIdentifier.time().Randomizer::string(10));
@@ -129,6 +131,7 @@ class FlowInstanceService extends AbstractService {
         $instance->identifier = $identifier;
         $instance->state = self::STATE_QUEUED;
         $instance->flow_identifier = $flowIdentifier;
+        $instance->domain = $domain;
         $instance->environment_initial = json_encode($environment);
 
         $instanceManager->insert($instance, [

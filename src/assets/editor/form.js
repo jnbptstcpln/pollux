@@ -38,3 +38,11 @@ Form.select = function (name, label, options, value, oninput, help_text) {
 Form.p = function (html) {
     return $.DOM.create("p").html(html);
 }
+Form.ul = function (items) {
+    var ul = $.DOM.create('ul');
+    console.log(items);
+    for (var i in items) {
+        ul.append("<li>{0}</li>".format(items[i]));
+    }
+    return ul;
+}

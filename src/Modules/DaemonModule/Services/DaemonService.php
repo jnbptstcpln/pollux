@@ -47,7 +47,7 @@ class DaemonService extends AbstractService {
      * @return mixed|string|null
      * @throws \Plexus\Exception\ModelException
      */
-    public function start_daemon($name, $machine, $machine_name, $settings=[]) {
+    public function start_daemon($name, $domain, $machine, $machine_name, $settings=[]) {
         $daemonManager = $this->getModelManager("daemon");
         $daemon = $daemonManager->create();
 
@@ -59,6 +59,7 @@ class DaemonService extends AbstractService {
         $daemon->instance_id = $instance_id;
         $daemon->state = self::STATE_RUNNING;
         $daemon->name = $name;
+        $daemon->domain = $domain;
         $daemon->machine = $machine;
         $daemon->machine_name = $machine_name;
         $daemon->settings = json_encode($settings);
@@ -154,6 +155,23 @@ class DaemonService extends AbstractService {
                 ['dead' => self::STATE_DEAD]
             ),
             ModelSelector::order("last_update", "desc")
+        );
+    }
+
+    /**
+     * @throws \Plexus\Exception\ModelException
+     */
+    public function get_by_domain($domain) {
+        $daemonManager = $this->getModelManager("daemon");
+        return $daemonManager->select(
+            ModelSelector::where(
+                "domain = :domain",
+                ['domain' => $domain]
+            ),
+            ModelSelector::where(
+                "state = :running OR state = :unknown",
+                ['running' => self::STATE_RUNNING, "unknown" => self::STATE_UNKNOWN]
+            )
         );
     }
 
