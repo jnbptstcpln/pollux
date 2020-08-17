@@ -501,7 +501,7 @@ function FlowEditor(on_loaded) {
     $(document).on('keydown', function (e) {
         if (e.code === "Backspace" || e.code === "Delete") {
             // Avoid capturing DELETE while editing an input field
-            if (e.target.nodeName !== "INPUT") {
+            if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.nodeName)) {
                 this.onDeleteSelected();
             }
         }
