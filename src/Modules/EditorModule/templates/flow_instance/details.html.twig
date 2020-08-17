@@ -27,7 +27,7 @@
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'entrée</h4>
                 <p style="margin: 0">
                     {% spaceless %}
-                        {% for input in flow.settings.environment.inputs %}
+                        {% for input in instance.flow.settings.environment.inputs %}
                             {% if input %}<small class="ms-5 badge badge-white">{{ input }}</small>{% endif %}
                         {% else %}
                             <span class="text-muted">Aucune variable d'entrée pour ce processus</span>
@@ -37,7 +37,7 @@
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables de sortie</h4>
                 <p style="margin: 0">
                     {% spaceless %}
-                        {% for output in flow.settings.environment.outputs %}
+                        {% for output in instance.flow.settings.environment.outputs %}
                             {% if output %}<small class="ms-5 badge badge-white">{{ output }}</small>{% endif %}
                         {% else %}
                             <span class="text-muted">Aucune variable de sortie pour ce procesus</span>
