@@ -75,31 +75,31 @@ class Splitter(Component):
         case = self.settings.get("case", {'type': 'equals', 'test': ''})
 
         if case['type'] == 'equals':
-            return value, None if value == case['test'] else None, value
+            return (value, None) if value == case['test'] else (None, value)
 
         elif case['type'] == 'greater':
-            return value, None if float(value) >= float(case['test']) else None, value
+            return (value, None) if float(value) >= float(case['test']) else (None, value)
 
         elif case['type'] == 'greater_strict':
-            return value, None if float(value) > float(case['test']) else None, value
+            return (value, None) if float(value) > float(case['test']) else (None, value)
 
         elif case['type'] == 'lesser':
-            return value, None if float(value) <= float(case['test']) else None, value
+            return (value, None) if float(value) <= float(case['test']) else (None, value)
 
         elif case['type'] == 'lesser_strict':
-            return value, None if float(value) < float(case['test']) else None, value
+            return (value, None) if float(value) < float(case['test']) else (None, value)
 
         elif case['type'] == 'contains':
-            return value, None if str(case['test']) in str(value) else None, value
+            return (value, None) if str(case['test']) in str(value) else (None, value)
 
         elif case['type'] == 'starts_with':
-            return value, None if str(value).startswith(str(case['test'])) else None, value
+            return (value, None) if str(value).startswith(str(case['test'])) else (None, value)
 
         elif case['type'] == 'ends_with':
-            return value, None if str(value).endswith(str(case['test'])) else None, value
+            return (value, None) if str(value).endswith(str(case['test'])) else (None, value)
 
         elif case['type'] == 'regex':
-            return value, None if re.search(str(case['test']), str(value)) is not None else None, value
+            return (value, None) if re.search(str(case['test']), str(value)) is not None else (None, value)
 
         else:
             raise Exception("Le type de test \"{}\" n'est pas pris en charge".format(case['type']))
