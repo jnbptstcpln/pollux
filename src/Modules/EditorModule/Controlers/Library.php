@@ -48,6 +48,7 @@ class Library extends Controler {
             $settings = $scheme->get("settings", new Collection());
 
             $flow->name = $settings->get("name", "Sans titre");
+            $flow->domain = $settings->get("domain", "default");
             $flow->scheme = json_encode($content);
 
             try {
