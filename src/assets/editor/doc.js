@@ -1,6 +1,5 @@
 Doc = {};
 Doc.format = function (string) {
-    console.log(string);
     string = string.replace(/<([^>]+)>/gi, "<code>$1</code>");
     string = string.replace(/\[([^\]]+)\]/gi, "<span class='badge badge-primary'>$1</span>");
     return string;
