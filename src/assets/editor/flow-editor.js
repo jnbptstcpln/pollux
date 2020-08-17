@@ -3,6 +3,7 @@ function FlowEditor(on_loaded) {
     this.flow = null;
     this.selectedNode = null;
     this.selectedLink = null;
+    this.allow_multiple_connection_to_input = true;
 
     this.mode = "selection";
 
@@ -217,10 +218,9 @@ function FlowEditor(on_loaded) {
             // cancel event propagation to prevent other click listener to execute (permit to select the new node)
             event.cancelBubble = true;
             var newNode = this.add_node(node.component.id, node.shape.x()+node.component.width/2+30, node.shape.y()+node.component.height/2+30);
-            // Clone the settings
-            newNode.settings = node.settings;
+            // Clone the settings (convert to and from JSON to perform a deep copy)
+            newNode.settings = JSON.parse(JSON.stringify(node.settings));
             // Select the new node
-
             this.onNodeSelected(newNode.shape)
         }.bind(this))
         node.set_action('remove', function(event) {
@@ -445,8 +445,12 @@ function FlowEditor(on_loaded) {
             alert("Impossible de connecter un élément à lui même.");
             return;
         }
-        if (this.flow.is_port_connected(target)) {
+        if (!this.allow_multiple_connection_to_input && this.flow.is_port_connected(target)) {
             alert("Impossible de connecter plusieurs sortie à une seule entrée.");
+            return;
+        }
+        if (this.flow.is_there_a_link(source, target)) {
+            alert("Ces deux ports sont déjà connectés entre eux.");
             return;
         }
 
@@ -493,7 +497,8 @@ function FlowEditor(on_loaded) {
             !target.parent('#canvas').exists() &&
             !target.parent('#toggle-rightbar').exists() &&
             !target.matches('.rightbar') &&
-            !target.parent('.rightbar').exists()) {
+            !target.parent('.rightbar').exists() &&
+            !target.parent('.doc-modal').exists()) {
             this.clear_selection();
         }
     }.bind(this));

@@ -12,6 +12,50 @@ Settings._convert_type = function(type) {
 Settings._form = function(module, name) {
     return Form.create("<div class='header'><h3>{0}</h3><h2>{1}</h2></div>".format(module, name));
 }
+Settings._inputs = function (node) {
+    var fieldset = Form.fieldset("Entrée{0}".format(node.component._inputs.length > 1 ? "s": ""));
+    for (var i in node.component._inputs) {
+        var input = node.component._inputs[i];
+        fieldset.append(Form.input(
+            input.name,
+            input.name,
+            Settings._convert_type(input.type),
+            node.settings["inputs"][input.name] !== undefined ? node.settings["inputs"][input.name] : "",
+            function(name, value) {
+                if (value.length > 0) {
+                    node.settings["inputs"][name] = value;
+                } else {
+                    delete node.settings["inputs"][name];
+                }
+
+            },
+            Doc.format(input.description)
+        ))
+    }
+    return fieldset;
+}
+Settings._settings = function (node) {
+    var fieldset = Form.fieldset("Options");
+    for (var i in node.component.settings) {
+        var setting = node.component.settings[i];
+        fieldset.append(Form.input(
+            setting.name,
+            setting.name,
+            Settings._convert_type(setting.type),
+            node.settings[setting.name] !== undefined ? node.settings[setting.name] : "",
+            function(name, value) {
+                if (value.length > 0) {
+                    node.settings[name] = value;
+                } else {
+                    delete node.settings[name];
+                }
+
+            },
+            Doc.format(setting.description)
+        ))
+    }
+    return fieldset;
+}
 
 Settings.build = function (node) {
     switch (node.component.id) {
@@ -23,6 +67,8 @@ Settings.build = function (node) {
             return Settings.Comparator(node)
         case (node.component.id.match(/logic\.Assert/) || {}).input:
             return Settings.Assert(node)
+        case (node.component.id.match(/system\.Restart/) || {}).input:
+            return Settings.Restart(node)
         default:
             return Settings.Default(node);
 
@@ -36,55 +82,15 @@ Settings.Default = function (node) {
 
     // Inputs
     if (component._inputs.length > 0) {
-
         if (node.settings["inputs"] === undefined) {
             node.settings["inputs"] = {};
         }
-
-        var fieldset = Form.fieldset("Entrée{0}".format(component._inputs.length > 1 ? "s": ""));
-        for (var i in component._inputs) {
-            var input = component._inputs[i];
-            fieldset.append(Form.input(
-                input.name,
-                input.name,
-                Settings._convert_type(input.type),
-                node.settings["inputs"][input.name] !== undefined ? node.settings["inputs"][input.name] : "",
-                function(name, value) {
-                    if (value.length > 0) {
-                        node.settings["inputs"][name] = value;
-                    } else {
-                        delete node.settings["inputs"][name];
-                    }
-
-                },
-                Doc.format(input.description)
-            ))
-        }
-        form.append(fieldset)
+        form.append(Settings._inputs(node))
     }
 
     // Settings
     if (node.component.settings.length > 0) {
-        var fieldset = Form.fieldset("Options");
-        for (var i in node.component.settings) {
-            var setting = node.component.settings[i];
-            fieldset.append(Form.input(
-                setting.name,
-                setting.name,
-                Settings._convert_type(setting.type),
-                node.settings[setting.name] !== undefined ? node.settings[setting.name] : "",
-                function(name, value) {
-                    if (value.length > 0) {
-                        node.settings[name] = value;
-                    } else {
-                        delete node.settings[name];
-                    }
-
-                },
-                Doc.format(setting.description)
-            ))
-        }
-        form.append(fieldset)
+        form.append(Settings._settings(node));
     }
 
     return form;
@@ -92,6 +98,11 @@ Settings.Default = function (node) {
 
 Settings.Switch = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
 
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings.append(
@@ -204,6 +215,11 @@ Settings.Switch = function (node) {
 Settings.Splitter = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
 
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
+
     if (!node.settings.case) { node.settings.case = {'type': 'equals', 'test': ''} }
 
     var fieldset_cases = Form.fieldset("Test à effectuer").addClass("switch-settings");
@@ -261,6 +277,11 @@ Settings.Splitter = function (node) {
 
 Settings.Comparator = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
 
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings.append(
@@ -367,6 +388,11 @@ Settings.Comparator = function (node) {
 Settings.Assert = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
 
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
+
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings
         .append(
@@ -377,7 +403,7 @@ Settings.Assert = function (node) {
                     'continue': "Continuer l'exécution du processus",
                     'exit': "Terminer l'exécution du processus",
                 },
-                node.settings.exit || "continue",
+                node.settings.exit || "exit",
                 function(name, value) {
                     node.settings[name] = value;
                 }
@@ -453,6 +479,52 @@ Settings.Assert = function (node) {
 
     fieldset_cases.append(cases_container);
     form.append(fieldset_cases);
+
+    return form;
+}
+
+Settings.Restart = function (node) {
+    var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
+
+    var fieldset_settings = Form.fieldset("Options");
+    fieldset_settings
+        .append(
+            Form.select(
+                'environment',
+                'Lors du redémarrage',
+                {
+                    'reset': "Réinitialiser l'environnment",
+                    'keep': "Conserver l'environnement actuel",
+                },
+                node.settings.environment || "reset",
+                function(name, value) {
+                    node.settings[name] = value;
+                }
+            )
+        )
+        .append(
+            Form.input(
+                'message',
+                'Message',
+                'text',
+                node.settings.message || "",
+                function(name, value) {
+                    if (value.length > 0) {
+                        node.settings[name] = value;
+                    } else {
+                        delete node.settings[name];
+                    }
+                },
+                Doc.format("Message à afficher juste avant le redémarrage (possibilité d'afficher l'entrée avec <{value}>)")
+            )
+        )
+    ;
+    form.append(fieldset_settings);
 
     return form;
 }

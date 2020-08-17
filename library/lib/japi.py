@@ -15,7 +15,7 @@ class jAPI:
         payload['request'] = request
         if cls.key:
             payload['key'] = cls.key
-        rep = requests.get(cls.endpoint, params=payload)
+        rep = requests.get(cls.endpoint, data=payload)
         try:
             return rep.json()
         except Exception:
