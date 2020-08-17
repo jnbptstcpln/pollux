@@ -64,6 +64,30 @@ class FlowInstanceAPI extends Controler {
         ]);
     }
 
+    public function on_logs($identifier) {
+
+        $instanceService = FlowInstanceService::fromRuntime($this);
+        $instance = $instanceService->get($identifier);
+
+        if (!$instance) {
+            $this->error(404, Text::format("Aucune instance ne correspond à {}", $identifier));
+        }
+
+        $logs = [];
+        FlowInstanceLogService::fromRuntime($this)->get($instance->identifier)->each(function(Model $log) use (&$logs) {
+            $logs[] = [
+                'timestamp' => strtotime($log->created_on),
+                'datetime' => $log->created_on,
+                'message' => $log->message
+            ];
+        });
+
+        $this->success([
+            'state' => $instance->state,
+            'logs' => $logs
+        ]);
+    }
+
     public function on_update($identifier) {
 
         $instanceService = FlowInstanceService::fromRuntime($this);
