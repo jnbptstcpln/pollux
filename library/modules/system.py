@@ -13,6 +13,7 @@ class Log(Component):
         """
         self.flow.log(value)
 
+
 class Sleep(Component):
     def func(self, value):
         """
