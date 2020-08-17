@@ -103,6 +103,25 @@ function Flow(nodes, links, settings) {
     }
 
     /**
+     * Tell if a link exists between the given ports
+     * @param from
+     * @param to
+     * @returns {boolean}
+     */
+    this.is_there_a_link = function (from, to) {
+        var links = this.get_links_to_node(to.component.node.id);
+        for (var i in links) {
+            var link = links[i];
+            if (link.source === from) {
+                if (link.targets[to.id()]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Export the flow
      * @returns {{nodes: [], links: [], positions: {}}}
      */

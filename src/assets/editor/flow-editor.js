@@ -3,6 +3,7 @@ function FlowEditor(on_loaded) {
     this.flow = null;
     this.selectedNode = null;
     this.selectedLink = null;
+    this.allow_multiple_connection_to_input = true;
 
     this.mode = "selection";
 
@@ -444,8 +445,12 @@ function FlowEditor(on_loaded) {
             alert("Impossible de connecter un élément à lui même.");
             return;
         }
-        if (this.flow.is_port_connected(target)) {
+        if (!this.allow_multiple_connection_to_input && this.flow.is_port_connected(target)) {
             alert("Impossible de connecter plusieurs sortie à une seule entrée.");
+            return;
+        }
+        if (this.flow.is_there_a_link(source, target)) {
+            alert("Ces deux ports sont déjà connectés entre eux.");
             return;
         }
 
