@@ -493,7 +493,8 @@ function FlowEditor(on_loaded) {
             !target.parent('#canvas').exists() &&
             !target.parent('#toggle-rightbar').exists() &&
             !target.matches('.rightbar') &&
-            !target.parent('.rightbar').exists()) {
+            !target.parent('.rightbar').exists() &&
+            !target.parent('.doc-modal').exists()) {
             this.clear_selection();
         }
     }.bind(this));
