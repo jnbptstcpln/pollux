@@ -53,6 +53,7 @@
     background-color: #f2f2f2;
     border-right: 1px solid #d9d9d9;
     height: calc(100vh - 60px);
+    overflow-y: scroll;
     position: fixed;
     padding: 10px 0;
     transition: width 300ms;
@@ -136,6 +137,7 @@
     background-color: #f2f2f2;
     border-left: 1px solid #d9d9d9;
     height: calc(100vh - 60px);
+    overflow-y: scroll;
     position: fixed;
     padding: 10px 0;
     transition: width 300ms;
