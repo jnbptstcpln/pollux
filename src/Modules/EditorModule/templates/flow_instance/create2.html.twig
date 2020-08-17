@@ -67,8 +67,18 @@
                         </p>
                     </div>
 
+                    <fieldset class="mt-15 mb-30">
+                        <legend>Paramétrage de l'instance</legend>
+                        <div class="p-30">
+                            <div class="field">
+                                {{ form.domain|render }}
+                            </div>
+                        </div>
+                    </fieldset>
+
+
                     {% if flow.settings.environment.inputs %}
-                        <fieldset>
+                        <fieldset class="mt-15 mb-30">
                             <legend>Variables d'entrée</legend>
                             <div class="p-30">
                                 {% for input in flow.settings.environment.inputs %}
@@ -78,7 +88,6 @@
                                 {% endfor %}
                             </div>
                         </fieldset>
-                        <h4></h4>
                     {% endif %}
 
                     <div class="text-right mt-30">

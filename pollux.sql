@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le :  jeu. 13 août 2020 à 18:48
+-- Généré le :  lun. 17 août 2020 à 06:20
 -- Version du serveur :  8.0.18
 -- Version de PHP :  7.4.5
 
@@ -28,6 +28,7 @@ CREATE TABLE `daemon` (
   `state` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `last_update` datetime NOT NULL,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `domain` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `machine` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `machine_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `settings` text COLLATE utf8mb4_general_ci NOT NULL
@@ -71,6 +72,7 @@ CREATE TABLE `flow_instance` (
   `identifier` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `state` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `flow_identifier` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `domain` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `daemon_identifier` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `created_on` datetime NOT NULL,
   `started_on` datetime DEFAULT NULL,

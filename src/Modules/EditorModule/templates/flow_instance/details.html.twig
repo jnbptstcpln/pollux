@@ -27,21 +27,21 @@
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'entrée</h4>
                 <p style="margin: 0">
                     {% spaceless %}
-                    {% for input in flow.settings.environment.inputs %}
-                    {% if input %}<small class="ms-5 badge badge-white">{{ input }}</small>{% endif %}
-                    {% else %}
-                        <span class="text-muted">Aucune variable d'entrée pour ce processus</span>
-                    {% endif %}
+                        {% for input in flow.settings.environment.inputs %}
+                            {% if input %}<small class="ms-5 badge badge-white">{{ input }}</small>{% endif %}
+                        {% else %}
+                            <span class="text-muted">Aucune variable d'entrée pour ce processus</span>
+                        {% endfor %}
                     {% endspaceless %}
                 </p>
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables de sortie</h4>
                 <p style="margin: 0">
                     {% spaceless %}
-                    {% for output in flow.settings.environment.outputs %}
-                    {% if output %}<small class="ms-5 badge badge-white">{{ output }}</small>{% endif %}
-                    {% else %}
-                        <span class="text-muted">Aucune variable de sortie pour ce procesus</span>
-                    {% endif %}
+                        {% for output in flow.settings.environment.outputs %}
+                            {% if output %}<small class="ms-5 badge badge-white">{{ output }}</small>{% endif %}
+                        {% else %}
+                            <span class="text-muted">Aucune variable de sortie pour ce procesus</span>
+                        {% endfor %}
                     {% endspaceless %}
                 </p>
             </div>
@@ -50,10 +50,20 @@
         <div class="box mt-20">
             <h2 class="title">Instance</h2>
 
+            {% if instance.warning %}
+                <div class="alert warning mt-30 mb-30">
+                    {{ instance.warning|raw('html') }}
+                </div>
+            {% endif %}
+
             <div class="p-20 mb-30" style="border-radius: 10px; border: 2px #eeeeee solid">
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">État actuel :</h4>
                 <p style="margin: 0" id="instance-state">
                     {{ instance.state|to_html }}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Domaine d'exécution :</h4>
+                <p style="margin: 0">
+                    <code>{{ instance.domain }}</code>
                 </p>
                 <h4 style="font-size: 1.1em; margin: 15px 0 5px">Daemon chargé de l'exécution</h4>
                 <p style="margin: 0" id="instance-daemon_identifier">

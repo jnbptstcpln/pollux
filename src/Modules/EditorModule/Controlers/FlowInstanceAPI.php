@@ -39,9 +39,10 @@ class FlowInstanceAPI extends Controler {
         }
 
         $environment = isset($data->environment) ? $data->environment : new \stdClass();
+        $domain = isset($data->domain) ? $data->domain : "default";
 
         $instanceService = FlowInstanceService::fromRuntime($this);
-        $instance_identifier = $instanceService->create($flow_identifier, $environment);
+        $instance_identifier = $instanceService->create($flow_identifier, $domain, $environment);
 
         $this->success([
             "instance" => $instance_identifier

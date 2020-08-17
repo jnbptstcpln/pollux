@@ -25,6 +25,7 @@
                     <tr>
                         <th>Statut</th>
                         <th class="control">Nom</th>
+                        <th class="control">Domaine</th>
                         <th class="control">Identifiant</th>
                         <th class="control">Machine</th>
                         {% if archive %}
@@ -41,6 +42,7 @@
                         <tr>
                             <td>{{ daemon.state|to_html }}</td>
                             <td>{{ daemon.name }}</td>
+                            <td><code>{{ daemon.domain }}</code></td>
                             <td>{{ daemon.instance_id|slice(0, 10) }}</td>
                             <td>{{ daemon.machine_name }}</td>
                             {% if archive %}
