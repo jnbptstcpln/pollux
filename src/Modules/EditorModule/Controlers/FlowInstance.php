@@ -18,6 +18,8 @@ use Plexus\Form;
 use Plexus\FormField\CSRFInput;
 use Plexus\FormField\SelectField;
 use Plexus\FormField\TextareaField;
+use Plexus\FormField\TextInput;
+use Plexus\FormValidator\LengthMaxValidator;
 use Plexus\Model;
 use Plexus\ModelSelector;
 use Plexus\Utils\Randomizer;
@@ -93,12 +95,23 @@ class FlowInstance extends Controler {
             ]))
         ;
 
+        foreach ($flow->settings['environment']['inputs'] as $input) {
+            $form->addField(new TextInput("flow_input_".htmlentities($input), [
+                'label' => $input,
+                'validators' => [
+                    new LengthMaxValidator(500)
+                ]
+            ]));
+        }
+
         if ($this->method("post")) {
             $form->fillWithArray($this->paramsPost());
             if ($form->validate()) {
-                $environment = parse_ini_string($form->getValueOf("environment"));
-                if (count($environment) == 0) {
-                    $environment = new \stdClass();
+
+                // Construction of the environment
+                $environment = new \stdClass();
+                foreach ($flow->settings['environment']['inputs'] as $input) {
+                    $environment->$input = $form->getValueOf("flow_input_".htmlentities($input));
                 }
 
                 $instanceService = FlowInstanceService::fromRuntime($this);

@@ -24,18 +24,25 @@
                         <span class="text-muted">Aucune description disponible pour ce processus</span>
                     {% endif %}
                 </p>
-                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'environnement paramétrables</h4>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables d'entrée</h4>
                 <p style="margin: 0">
-                    {% if instance.flow.settings.environment|length %}
-                        {% set variables = instance.flow.settings.environment|split(";") %}
-                        {% spaceless %}
-                            {% for variable in variables %}
-                                {% if variable %}<small class="ms-5 badge badge-white">{{ variable }}</small>{% endif %}
-                            {% endfor %}
-                        {% endspaceless %}
+                    {% spaceless %}
+                    {% for input in flow.settings.environment.inputs %}
+                    {% if input %}<small class="ms-5 badge badge-white">{{ input }}</small>{% endif %}
                     {% else %}
-                        <span class="text-muted">Aucune variable n'a été déclarée paramétrable</span>
+                        <span class="text-muted">Aucune variable d'entrée pour ce processus</span>
                     {% endif %}
+                    {% endspaceless %}
+                </p>
+                <h4 style="font-size: 1.1em; margin: 15px 0 5px">Variables de sortie</h4>
+                <p style="margin: 0">
+                    {% spaceless %}
+                    {% for output in flow.settings.environment.outputs %}
+                    {% if output %}<small class="ms-5 badge badge-white">{{ output }}</small>{% endif %}
+                    {% else %}
+                        <span class="text-muted">Aucune variable de sortie pour ce procesus</span>
+                    {% endif %}
+                    {% endspaceless %}
                 </p>
             </div>
         </div>
