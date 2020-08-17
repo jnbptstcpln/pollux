@@ -55,7 +55,11 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="{% if archive %}6{% else %}5{% endif %}" class="text-center">Aucune instance en cours d'exécution</td>
+                            {% if archive %}
+                                <td colspan="7" class="text-center">Aucun daemon n'a été archivé pour le moment</td>
+                            {% else %}
+                                <td colspan="6" class="text-center">Aucun daemon en cours d'exécution</td>
+                            {% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>

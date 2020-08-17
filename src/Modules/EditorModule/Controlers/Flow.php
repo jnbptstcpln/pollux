@@ -35,6 +35,7 @@ class Flow extends Controler {
         $flow = $flowManager->create();
 
         $flow->name = "Sans titre";
+        $flow->domain = "default";
         $flow->identifier = $identifier;
         $flow->scheme = json_encode(
             [
@@ -42,7 +43,8 @@ class Flow extends Controler {
                 "links" => [],
                 "positions" => [],
                 "settings" => [
-                    "name" => $flow->name
+                    "name" => $flow->name,
+                    "domain" => $flow->domain
                 ],
             ]
         );

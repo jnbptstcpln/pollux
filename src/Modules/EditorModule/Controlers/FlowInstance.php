@@ -105,7 +105,7 @@ class FlowInstance extends Controler {
         }
 
         // Default form value
-        $form->domain->setValue("default");
+        $form->domain->setValue($flow->domain);
 
         if ($this->method("post")) {
             $form->fillWithArray($this->paramsPost());

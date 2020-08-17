@@ -32,7 +32,7 @@ class Greater(Component):
         else:
             return None, a
 
-class Greater(Component):
+class Lesser(Component):
     def func(self, a, b):
         """
         :param a:float

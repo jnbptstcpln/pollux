@@ -360,3 +360,52 @@ body > .doc-modal .doc-content > h1 {
     margin: 10px 0 25px;
 
 }
+
+/*
+ * Switch Settings
+ */
+.switch-settings a {
+
+}
+.switch-settings-case {
+    position: relative;
+    border: 1px solid #e2e2e2;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.switch-settings-case > i {
+    cursor: pointer;
+    right: 10px;
+    font-style: normal;
+    position: absolute;
+    top: 5px;
+}
+.switch-settings-case > i::before {
+    content: "×";
+}
+.switch-settings-case > div:not(:last-child) {
+    margin-bottom: 15px;
+}
+.switch-settings-case > div > div.field {
+    margin-bottom: 0;
+}
+.switch-settings-case > div > div.field label {
+    margin-bottom: 7.5px;
+}
+.switch-settings-case > div > label {
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #666;
+}
+.switch-settings-case > div > input {
+    border: 2px #f0f0f0 solid;
+    border-top: 0;
+    padding: 0 10px;
+    width: 100%;
+}
+.switch-settings-case > div > div.field select {
+    padding: 0 10px;
+    border: 2px #f0f0f0 solid;
+    width: 100%;
+}

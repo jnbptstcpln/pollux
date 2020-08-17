@@ -501,7 +501,7 @@ function FlowEditor(on_loaded) {
     $(document).on('keydown', function (e) {
         if (e.code === "Backspace" || e.code === "Delete") {
             // Avoid capturing DELETE while editing an input field
-            if (e.target.nodeName !== "INPUT") {
+            if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.nodeName)) {
                 this.onDeleteSelected();
             }
         }
@@ -726,6 +726,11 @@ function FlowEditor(on_loaded) {
                 function(name, value) {
                     this.flow.settings[name] = value;
                     $("head title").text("Processus \"{0}\"".format(value));
+                }.bind(this)
+            ));
+            common.append(Form.input("domain", "Domaine d'exécution par défaut", "text", this.flow.settings["domain"] || "",
+                function(name, value) {
+                    this.flow.settings[name] = value;
                 }.bind(this)
             ));
             common.append(Form.textarea("description", "Description", this.flow.settings["description"] || "",

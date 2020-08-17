@@ -96,3 +96,15 @@ class Set(Component):
         :param value:*:Valeur à stocker
         """
         self.environment.set(self.settings.get("variable_name"), value)
+
+class Date(Component):
+    def func(self, value):
+        """
+        :description Retourne la date actuelle selon le format spécifié
+        :size 0
+        :setting format:string:Format de la date, par défaut <%d/%m/%Y %H:%M:%S> (<%d> jour, <%m> mois, <%Y> année, <%H> heure, <%M> minute, <%S> seconde)
+        :return date:string:Date atuelle selon le format spécifié
+        """
+        from datetime import datetime
+        format = self.settings.get("format", "%d/%m/%Y %H:%M:%S")
+        return datetime.now().strftime(format)

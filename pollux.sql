@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le :  lun. 17 août 2020 à 06:20
+-- Généré le :  lun. 17 août 2020 à 07:44
 -- Version du serveur :  8.0.18
 -- Version de PHP :  7.4.5
 
@@ -56,6 +56,7 @@ CREATE TABLE `daemon_log` (
 CREATE TABLE `flow` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `domain` varchar(255) NOT NULL,
   `identifier` varchar(255) NOT NULL,
   `last_update` datetime NOT NULL,
   `scheme` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
