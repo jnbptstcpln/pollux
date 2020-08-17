@@ -735,14 +735,37 @@ function FlowEditor(on_loaded) {
             ))
             form.append(common);
 
-            // Environement
+            // Environnement
             var environment = Form.fieldset("Environnement");
-            environment.append(Form.p("Déclarer ci dessous toutes les variables qui seront utilisées en paramètre de ce processus, séparées par des \";\""))
-            environment.append(Form.textarea("environment", "Variables", this.flow.settings["environment"] || "",
-                function(name, value) {
-                    this.flow.settings[name] = value;
-                }.bind(this)
-            ))
+            var inputs = [];
+            var outputs = [];
+            // Récupération des blocs Get et Set
+            for (var i in this.flow.nodes) {
+                var name = this.flow.nodes[i].settings.variable_name;
+                switch (this.flow.nodes[i].component.id) {
+                    case "system.Get":
+                        inputs.push("<code>{0}</code>".format(name));
+                        break;
+                    case "system.Set":
+                        outputs.push("<code>{0}</code>".format(name));
+                        break;
+                }
+            }
+
+            environment.append(Form.p("Variables d'entrée (blocs <code>Get</code>) :"))
+            if (inputs.length > 0) {
+                environment.append(Form.ul(inputs));
+            } else {
+                environment.append(Form.p("<span class='text-muted text-uppercase'>Aucune entrée</span>").addClass('text-center'));
+            }
+
+            environment.append(Form.p("Variables de sortie (bloc <code>Set</code>) :"))
+            if (outputs.length > 0) {
+                environment.append(Form.ul(outputs));
+            } else {
+                environment.append(Form.p("<span class='text-muted text-uppercase'>Aucune sortie</span>").addClass('text-center'));
+            }
+
             form.append(environment);
 
             // Exécution

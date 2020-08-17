@@ -115,10 +115,26 @@ function Flow(nodes, links, settings) {
             'settings': this.settings,
         };
 
+        // Mise en place des paramètres d'environment
+        flowData.settings.environment = {'inputs': [], 'outputs': []};
+
         for (var i in this.nodes) {
+
+            // Exportation de la position
             var node = this.nodes[i];
             flowData.nodes.push(node.export());
             flowData.positions[node.id] = node.position();
+
+            // Exportation des variables d'entrée et de sortie
+            var name = node.settings.variable_name;
+            switch (node.component.id) {
+                case "system.Get":
+                    flowData.settings.environment.inputs.push(name);
+                    break;
+                case "system.Set":
+                    flowData.settings.environment.outputs.push(name);
+                    break;
+            }
         }
 
         for (var i in this.links) {
