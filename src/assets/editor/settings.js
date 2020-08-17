@@ -12,6 +12,50 @@ Settings._convert_type = function(type) {
 Settings._form = function(module, name) {
     return Form.create("<div class='header'><h3>{0}</h3><h2>{1}</h2></div>".format(module, name));
 }
+Settings._inputs = function (node) {
+    var fieldset = Form.fieldset("Entrée{0}".format(node.component._inputs.length > 1 ? "s": ""));
+    for (var i in node.component._inputs) {
+        var input = node.component._inputs[i];
+        fieldset.append(Form.input(
+            input.name,
+            input.name,
+            Settings._convert_type(input.type),
+            node.settings["inputs"][input.name] !== undefined ? node.settings["inputs"][input.name] : "",
+            function(name, value) {
+                if (value.length > 0) {
+                    node.settings["inputs"][name] = value;
+                } else {
+                    delete node.settings["inputs"][name];
+                }
+
+            },
+            Doc.format(input.description)
+        ))
+    }
+    return fieldset;
+}
+Settings._settings = function (node) {
+    var fieldset = Form.fieldset("Options");
+    for (var i in node.component.settings) {
+        var setting = node.component.settings[i];
+        fieldset.append(Form.input(
+            setting.name,
+            setting.name,
+            Settings._convert_type(setting.type),
+            node.settings[setting.name] !== undefined ? node.settings[setting.name] : "",
+            function(name, value) {
+                if (value.length > 0) {
+                    node.settings[name] = value;
+                } else {
+                    delete node.settings[name];
+                }
+
+            },
+            Doc.format(setting.description)
+        ))
+    }
+    return fieldset;
+}
 
 Settings.build = function (node) {
     switch (node.component.id) {
@@ -36,55 +80,15 @@ Settings.Default = function (node) {
 
     // Inputs
     if (component._inputs.length > 0) {
-
         if (node.settings["inputs"] === undefined) {
             node.settings["inputs"] = {};
         }
-
-        var fieldset = Form.fieldset("Entrée{0}".format(component._inputs.length > 1 ? "s": ""));
-        for (var i in component._inputs) {
-            var input = component._inputs[i];
-            fieldset.append(Form.input(
-                input.name,
-                input.name,
-                Settings._convert_type(input.type),
-                node.settings["inputs"][input.name] !== undefined ? node.settings["inputs"][input.name] : "",
-                function(name, value) {
-                    if (value.length > 0) {
-                        node.settings["inputs"][name] = value;
-                    } else {
-                        delete node.settings["inputs"][name];
-                    }
-
-                },
-                Doc.format(input.description)
-            ))
-        }
-        form.append(fieldset)
+        form.append(Settings._inputs(node))
     }
 
     // Settings
     if (node.component.settings.length > 0) {
-        var fieldset = Form.fieldset("Options");
-        for (var i in node.component.settings) {
-            var setting = node.component.settings[i];
-            fieldset.append(Form.input(
-                setting.name,
-                setting.name,
-                Settings._convert_type(setting.type),
-                node.settings[setting.name] !== undefined ? node.settings[setting.name] : "",
-                function(name, value) {
-                    if (value.length > 0) {
-                        node.settings[name] = value;
-                    } else {
-                        delete node.settings[name];
-                    }
-
-                },
-                Doc.format(setting.description)
-            ))
-        }
-        form.append(fieldset)
+        form.append(Settings._settings(node));
     }
 
     return form;
@@ -92,6 +96,11 @@ Settings.Default = function (node) {
 
 Settings.Switch = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
 
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings.append(
@@ -204,6 +213,11 @@ Settings.Switch = function (node) {
 Settings.Splitter = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
 
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
+
     if (!node.settings.case) { node.settings.case = {'type': 'equals', 'test': ''} }
 
     var fieldset_cases = Form.fieldset("Test à effectuer").addClass("switch-settings");
@@ -261,6 +275,11 @@ Settings.Splitter = function (node) {
 
 Settings.Comparator = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
 
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings.append(
@@ -366,6 +385,11 @@ Settings.Comparator = function (node) {
 
 Settings.Assert = function (node) {
     var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
 
     var fieldset_settings = Form.fieldset("Options");
     fieldset_settings
