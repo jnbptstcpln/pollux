@@ -377,7 +377,7 @@ Settings.Assert = function (node) {
                     'continue': "Continuer l'exécution du processus",
                     'exit': "Terminer l'exécution du processus",
                 },
-                node.settings.exit || "continue",
+                node.settings.exit || "exit",
                 function(name, value) {
                     node.settings[name] = value;
                 }
