@@ -10,8 +10,9 @@ class Log(Component):
         :description Permet d'ajouter l'entrée aux logs du processus
         :size 0
         :param value:*:Valeur à ajouter aux logs
+        :setting template:string:Mise en forme du message (par défaut <{value}>)
         """
-        self.flow.log(value)
+        self.flow.log(self.settings.get("template", "{value}").format(value=value))
 
 
 class Sleep(Component):
@@ -38,6 +39,23 @@ class Exit(Component):
         self.flow.log("Exit : \"{}\"".format(value))
         self.exit()
 
+class Restart(Component):
+    def func(self, value):
+        """
+        :description Permet de rédémarrer le processus
+        :size 0
+        :param value:*:Valeur transmise pour activer le bloc
+        :setting environment:string:Définit si l'environnement doit être conservé ou non
+        :setting message:string:Message à ajouter aux logs (possiblité d'afficher l'entrée avec <{value}>)
+        """
+        keep_environment = False if self.settings.get("environment", "reset") == "reset" else True
+
+        template = self.settings.get("message", None)
+        message = None
+        if template is not None:
+            message = template.format(value=value)
+
+        self.restart(keep_environment, message)
 
 class Format1(Component):
     def func(self, str1):

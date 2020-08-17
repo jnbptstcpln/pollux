@@ -67,6 +67,8 @@ Settings.build = function (node) {
             return Settings.Comparator(node)
         case (node.component.id.match(/logic\.Assert/) || {}).input:
             return Settings.Assert(node)
+        case (node.component.id.match(/system\.Restart/) || {}).input:
+            return Settings.Restart(node)
         default:
             return Settings.Default(node);
 
@@ -477,6 +479,52 @@ Settings.Assert = function (node) {
 
     fieldset_cases.append(cases_container);
     form.append(fieldset_cases);
+
+    return form;
+}
+
+Settings.Restart = function (node) {
+    var form = Settings._form(node.component.module, node.component.name);
+
+    if (node.settings["inputs"] === undefined) {
+        node.settings["inputs"] = {};
+    }
+    form.append(Settings._inputs(node))
+
+    var fieldset_settings = Form.fieldset("Options");
+    fieldset_settings
+        .append(
+            Form.select(
+                'environment',
+                'Lors du redémarrage',
+                {
+                    'reset': "Réinitialiser l'environnment",
+                    'keep': "Conserver l'environnement actuel",
+                },
+                node.settings.environment || "reset",
+                function(name, value) {
+                    node.settings[name] = value;
+                }
+            )
+        )
+        .append(
+            Form.input(
+                'message',
+                'Message',
+                'text',
+                node.settings.message || "",
+                function(name, value) {
+                    if (value.length > 0) {
+                        node.settings[name] = value;
+                    } else {
+                        delete node.settings[name];
+                    }
+                },
+                Doc.format("Message à afficher juste avant le redémarrage (possibilité d'afficher l'entrée avec <{value}>)")
+            )
+        )
+    ;
+    form.append(fieldset_settings);
 
     return form;
 }
