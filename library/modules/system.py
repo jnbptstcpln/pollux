@@ -39,41 +39,41 @@ class Exit(Component):
 
 
 class Format1(Component):
-    def func(self, string1):
+    def func(self, str1):
         """
         :description Permet de formatter la chaine de caractères passée en entrée
         :size 0
-        :param string1:string:Chaine de caractères
+        :param str1:string:Chaine de caractères
         :return result:string:Résultat du formattage
-        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{0}>)
+        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{str1}>)
         """
-        return self.settings.get("template", "{0}").format(string1)
+        return self.settings.get("template", "{str1}").format(str1=str1)
 
 class Format2(Component):
-    def func(self, string1, string2):
+    def func(self, str1, str2):
         """
         :description Permet de formatter les chaines de caractères passées en entrées
         :size 0
-        :param string1:string:Première chaine de caractères
-        :param string2:string:Seconde chaine de caractères
+        :param str1:string:Première chaine de caractères
+        :param str2:string:Seconde chaine de caractères
         :return result:string:Résultat du formattage
-        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{0}{1}>)
+        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{str1}{str2}>)
         """
-        return self.settings.get("template", "{0}{1}").format(string1, string2)
+        return self.settings.get("template", "{str1}{str2}").format(str1=str1, str2=str2)
 
 
 class Format3(Component):
-    def func(self, string1, string2, string3):
+    def func(self, str1, str2, str3):
         """
         :description Permet de formatter les chaines de caractères passées en entrées
         :size 0
-        :param string1:string:Première chaine de caractères
-        :param string2:string:Seconde chaine de caractères
-        :param string3:string:Troisième chaine de caractères
+        :param str1:string:Première chaine de caractères
+        :param str2:string:Seconde chaine de caractères
+        :param str3:string:Troisième chaine de caractères
         :return result:string:Résultat de formattage
-        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{0}{1}{2}>)
+        :setting template:string:Modèle selon lequel sera formattée la sortie (par défaut <{str1}{str2}{str2}>)
         """
-        return self.settings.get("template", "{0}{1}{2}").format(string1, string2, string3)
+        return self.settings.get("template", "{str1}{str2}{str3}").format(str1=str1, str2=str2, str3=str3)
 
 
 class Get(Component):
@@ -97,8 +97,9 @@ class Set(Component):
         """
         self.environment.set(self.settings.get("variable_name"), value)
 
+
 class Date(Component):
-    def func(self, value):
+    def func(self):
         """
         :description Retourne la date actuelle selon le format spécifié
         :size 0
