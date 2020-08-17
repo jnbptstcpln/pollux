@@ -217,10 +217,9 @@ function FlowEditor(on_loaded) {
             // cancel event propagation to prevent other click listener to execute (permit to select the new node)
             event.cancelBubble = true;
             var newNode = this.add_node(node.component.id, node.shape.x()+node.component.width/2+30, node.shape.y()+node.component.height/2+30);
-            // Clone the settings
-            newNode.settings = node.settings;
+            // Clone the settings (convert to and from JSON to perform a deep copy)
+            newNode.settings = JSON.parse(JSON.stringify(node.settings));
             // Select the new node
-
             this.onNodeSelected(newNode.shape)
         }.bind(this))
         node.set_action('remove', function(event) {
