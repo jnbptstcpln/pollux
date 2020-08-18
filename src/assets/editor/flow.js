@@ -148,10 +148,14 @@ function Flow(nodes, links, settings) {
             var name = node.settings.variable_name;
             switch (node.component.id) {
                 case "system.Get":
-                    flowData.settings.environment.inputs.push(name);
+                    if (flowData.settings.environment.inputs.indexOf(name) < 0) {
+                        flowData.settings.environment.inputs.push(name);
+                    }
                     break;
                 case "system.Set":
-                    flowData.settings.environment.outputs.push(name);
+                    if (flowData.settings.environment.outputs.indexOf(name) < 0) {
+                        flowData.settings.environment.outputs.push(name);
+                    }
                     break;
             }
         }
