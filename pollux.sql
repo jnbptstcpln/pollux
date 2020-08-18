@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le :  lun. 17 août 2020 à 14:15
+-- Généré le :  mar. 18 août 2020 à 07:55
 -- Version du serveur :  8.0.18
 -- Version de PHP :  7.4.5
 
@@ -31,7 +31,8 @@ CREATE TABLE `daemon` (
   `domain` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `machine` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `machine_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `settings` text COLLATE utf8mb4_general_ci NOT NULL
+  `settings` text COLLATE utf8mb4_general_ci NOT NULL,
+  `_queue` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

@@ -35,7 +35,7 @@ class DaemonService extends AbstractService {
         $daemonManager = $this->getModelManager("daemon");
         $daemon = $daemonManager->get(['instance_id' => $instance_id]);
         if ($daemon) {
-
+            $daemon->queue = json_decode($daemon->_queue, true);
         }
         return $daemon;
     }
@@ -63,6 +63,7 @@ class DaemonService extends AbstractService {
         $daemon->machine = $machine;
         $daemon->machine_name = $machine_name;
         $daemon->settings = json_encode($settings);
+        $daemon->_queue = json_encode([]);
 
         $daemonManager->insert($daemon, [
             'last_update' => 'NOW()'
@@ -173,6 +174,45 @@ class DaemonService extends AbstractService {
                 ['running' => self::STATE_RUNNING, "unknown" => self::STATE_UNKNOWN]
             )
         );
+    }
+
+    /**
+     * @param $instance_id
+     * @param $commande
+     * @param null $settings
+     * @return Model|null
+     * @throws \Plexus\Exception\ModelException
+     */
+    public function send_command($instance_id, $commande, $settings=null) {
+        $daemonManager = $this->getModelManager("daemon");
+        $daemon = $daemonManager->get(['instance_id' => $instance_id]);
+        if ($daemon) {
+            if ($daemon->state !== self::STATE_DEAD) {
+                $queue = json_decode($daemon->_queue, true);
+                $queue[] = [
+                    'command' => $commande,
+                    'settings' => $settings ? $settings : new \stdClass()
+                ];
+                $daemon->_queue = json_encode($queue);
+                $daemonManager->update($daemon);
+                DaemonLogService::fromRuntime($this)->logMessage($daemon->instance_id, Text::format("Commande envoyée : \"{}\"", $commande));
+            }
+        }
+        return $daemon;
+    }
+
+    /**
+     * @param $instance_id
+     * @return mixed
+     * @throws \Plexus\Exception\ModelException
+     */
+    public function get_commands($instance_id) {
+        $daemonManager = $this->getModelManager("daemon");
+        $daemon = $daemonManager->get(['instance_id' => $instance_id]);
+        $queue = json_decode($daemon->_queue, true);
+        $daemon->_queue = json_encode([]);
+        $daemonManager->update($daemon);
+        return $queue;
     }
 
 }
