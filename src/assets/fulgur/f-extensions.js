@@ -718,3 +718,28 @@ $.registerElementExtension('json', function() {
         el.text(text);
     }
 });
+
+/**
+ * AJAXPOST
+ */
+$.registerElementExtension('ajaxpost', function() {
+    var link = this;
+    var ongoing = false;
+    link.on('click', function(event) {
+        event.preventDefault();
+        if (!ongoing) {
+            ongoing = true;
+            $.api.post(
+                event.element.attr('href'),
+                JSON.parse(event.element.attr('data-data') || "{}"),
+                function (rep) {
+                    ongoing = false;
+                    if (!rep.success) {
+                        console.log(rep);
+                        alert("Une erreur est survenue...");
+                    }
+                }
+            )
+        }
+    });
+});

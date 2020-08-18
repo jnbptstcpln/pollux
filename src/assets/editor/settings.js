@@ -334,8 +334,7 @@ Settings.Comparator = function (node) {
                                 'lesser_strict': '<',
                                 'contains': 'contient',
                                 'starts_with': 'commence par',
-                                'ends_with': 'termine par',
-                                'regex': 'correspond à',
+                                'ends_with': 'termine par'
                             },
                             caseData.type,
                             function(name, value) {

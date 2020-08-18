@@ -54,7 +54,8 @@ class SurveillanceAPI extends \Plexus\Controler {
         if ($daemon->state == DaemonService::STATE_DEAD) {
             $this->success([
                 'state' => $daemon->state,
-                'flows' => []
+                'flows' => [],
+                'queue' => []
             ]);
         }
 
@@ -103,7 +104,8 @@ class SurveillanceAPI extends \Plexus\Controler {
 
         $this->success([
             'state' => $daemon->state,
-            'flows' => $flows
+            'flows' => $flows,
+            'queue' => $daemonService->get_commands($daemon->instance_id)
         ]);
     }
 

@@ -94,12 +94,31 @@ class Surveillance extends Controler {
 
 
         $this->success([
+            'continue' => $daemon->state !== DaemonService::STATE_DEAD,
             "daemon" => [
                 "state" => Label::fromRuntime($this)->value_to_html($daemon->state)
             ],
             "logs" => DaemonLogService::fromRuntime($this)->get($instance_id, $this->paramGet("log_index", null))->toArray(),
             "instances" => $instances
         ]);
+    }
+
+    public function command_stop($instance_id) {
+        $daemonService = DaemonService::fromRuntime($this);
+        $daemon = $daemonService->send_command($instance_id, "stop");
+        if (!$daemon) {
+            $this->error(404, "Aucune instance ne correspond à votre requête.");
+        }
+        $this->success(null);
+    }
+
+    public function command_reload($instance_id) {
+        $daemonService = DaemonService::fromRuntime($this);
+        $daemon = $daemonService->send_command($instance_id, "reload");
+        if (!$daemon) {
+            $this->error(404, "Aucune instance ne correspond à votre requête.");
+        }
+        $this->success(null);
     }
 
 }

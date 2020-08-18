@@ -13,3 +13,4 @@ $('.fulgur-searchtable').searchtable();
 $('.fulgur-confirm').confirm();
 $('.fulgur-postlink').postlink();
 $('.fulgur-json').json();
+$('.fulgur-ajaxpost').ajaxpost();

@@ -45,6 +45,33 @@
             </div>
         </div>
 
+        <div class="box mt-20" id="shortcuts">
+            <h2 class="title">Actions</h2>
+
+            <div class="grid wrap items" style="--item-width: 125px;">
+
+                <div class="item">
+                    <a class="fulgur-ajaxpost" href="{{ route_url('daemon-surveillance-command-stop', daemon.instance_id) }}">
+                        <div class="button danger">
+                            <i class="fad fa-power-off"></i>
+                        </div>
+                        <span style="color: red">Arrêter<br>le daemon</span>
+                    </a>
+                </div>
+
+                <div class="item">
+                    <a class="fulgur-ajaxpost" href="{{ route_url('daemon-surveillance-command-reload', daemon.instance_id) }}">
+                        <div class="button primary">
+                            <i class="fad fa-sync"></i>
+                        </div>
+                        <span>Recharger<br>les modules</span>
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
         <div class="box mt-20">
             <h2 class="title">Processus associés</h2>
 
@@ -159,10 +186,15 @@
                                 instances_container.style('height', null);
                             }
 
+                            if (payload.continue) {
+                                setTimeout(update, 1000);
+                            }
+
                         } else {
                             console.log(rep);
+                            setTimeout(update, 1000);
                         }
-                        setTimeout(update, 1000);
+
                     }
                 )
             }
