@@ -205,7 +205,7 @@ Settings.Switch = function (node) {
                     'test': '',
                     'value': ''
                 })
-                cases_container.append(switch_settings_case(size-1));
+                cases_container.append(switch_settings_case(node.settings.cases[size-1]));
             })
     )
     form.append(fieldset_cases);
@@ -377,7 +377,7 @@ Settings.Comparator = function (node) {
                     'type': "equals",
                     'value': ''
                 })
-                cases_container.append(switch_settings_case(size-1));
+                cases_container.append(switch_settings_case(node.settings.cases[size-1]));
             })
     )
     form.append(fieldset_cases);

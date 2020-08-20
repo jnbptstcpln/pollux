@@ -343,6 +343,12 @@ body > .doc-modal .doc-content {
 body > .doc-modal .doc-content > table {
     width: 100%;
 }
+body > .doc-modal .doc-content > table thead th:nth-child(1) {
+    width: 25%;
+}
+body > .doc-modal .doc-content > table thead th:nth-child(2) {
+    width: 15%;
+}
 body > .doc-modal .doc-content > table tbody td {
     text-align: center;
 }
