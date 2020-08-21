@@ -20,7 +20,11 @@ class Application extends \Plexus\Application {
 
     protected function registerServices() {
         DatabaseManager::fromRuntime($this);
+
         $twig = TwigRenderer::fromRuntime($this, Path::build($this->root_path, "src", "templates"));
+        $twig->addGlobal("__app", $this);
+        $twig->addGlobal('__host', $_SERVER['HTTP_HOST']);
+
         $assets = Assets::fromRuntime($this);
         $label = Label::fromRuntime($this);
         // Call APIMiddleware to add a new middleware to the router before adding modules' routes

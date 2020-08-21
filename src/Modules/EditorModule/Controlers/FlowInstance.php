@@ -3,6 +3,7 @@
 namespace CPLN\Modules\EditorModule\Controlers;
 
 
+use CPLN\Extensions\UserSession;
 use CPLN\Modules\DaemonModule\Services\DaemonService;
 use CPLN\Modules\EditorModule\Services\FlowInstanceLogService;
 use CPLN\Modules\EditorModule\Services\FlowInstanceService;
@@ -28,6 +29,12 @@ use Plexus\Utils\Text;
 class FlowInstance extends Controler {
 
     use ControlerAPI;
+
+    use UserSession;
+
+    public function middleware() {
+        $this->needLogin();
+    }
 
     public function all() {
 

@@ -3,6 +3,7 @@
 namespace CPLN\Modules\EditorModule\Controlers;
 
 
+use CPLN\Extensions\UserSession;
 use CPLN\Services\Library;
 use Plexus\Controler;
 use Plexus\Exception\ModelException;
@@ -12,6 +13,12 @@ use Plexus\Utils\Randomizer;
 use Plexus\Utils\Text;
 
 class Flow extends Controler {
+
+    use UserSession;
+
+    public function middleware() {
+        $this->needLogin();
+    }
 
     public function all() {
 

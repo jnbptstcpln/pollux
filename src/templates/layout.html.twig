@@ -11,9 +11,11 @@
         </div>
 
         <div class="buttons">
-            {#<div class="icon">
-                <a href="" title=""><i class="fas fa-globe"></i></a>
-            </div>#}
+            {% if __user %}
+            <div class="icon">
+                <a href="{{ route_url('user-logout') }}" title="Se déconnecter"><i class="fas fa-sign-out"></i></a>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -42,6 +44,13 @@
                     <a href="{{ route_url('daemon-surveillance-index') }}" title="Instances">
                         <span class="icon"><i class="fas fa-server"></i></span>
                         <span class="menu-label">Daemons</span>
+                    </a>
+                </li>
+
+                <li {% if lefbarnav_active == 'user' %} class="active"{% endif %}>
+                    <a href="{{ route_url('user-manage-index') }}" title="Utilisateurs">
+                        <span class="icon"><i class="fas fa-users"></i></span>
+                        <span class="menu-label">Utilisateurs</span>
                     </a>
                 </li>
 

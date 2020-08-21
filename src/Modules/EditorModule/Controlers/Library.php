@@ -4,6 +4,7 @@
 namespace CPLN\Modules\EditorModule\Controlers;
 
 
+use CPLN\Extensions\UserSession;
 use CPLN\Modules\EditorModule\Structures\Component;
 use CPLN\Modules\LibraryModule\Services\ModuleService;
 use Plexus\Controler;
@@ -14,6 +15,12 @@ use Plexus\Exception\ModelException;
 class Library extends Controler {
 
     use ControlerAPI;
+
+    use UserSession;
+
+    public function middleware() {
+        $this->needLogin();
+    }
 
     public function components() {
         $moduleService = ModuleService::fromRuntime($this);

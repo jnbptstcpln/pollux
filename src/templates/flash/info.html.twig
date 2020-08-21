@@ -1,6 +1,6 @@
 {% set flashes = __app.session.flashes('info') %}
 {% if flashes %}
-    <div class="alert info">
+    <div class="alert info mb-15">
         {% if flashes|length > 1 %}
             <ul>
                 {% for flash in flashes %}
