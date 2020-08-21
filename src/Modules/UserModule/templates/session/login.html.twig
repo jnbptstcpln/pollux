@@ -1,0 +1,47 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Connexion{% endblock %}
+
+{% block content %}
+    <div class="login-box">
+        <div>
+            <form method="post">
+
+                <div class="mb-30 p-20 text-center text-uppercase bg-primary" style="border-radius: 10px">
+                    <h1 style="color: white; font-size: 2.25em; margin-bottom: 10px">pollux.jeanba.dev</h1>
+                    <hr style="border-color: white">
+                    <h2 style="color: white; font-size: 1.25em">Connexion</h2>
+                </div>
+
+                <div class="max-w-400 ms-auto">
+
+                    {% set formErrors = form.errors.toArray() %}
+                    {% if formErrors %}
+                        <div class="alert error max-w-750 ms-auto p-5 mb-20">
+                            {% if formErrors|length > 1 %}
+                                <ul>
+                                    {% for error in formErrors %}
+                                        <li>{{ error.message|nl2br }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>{{ formErrors[0].message|nl2br }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {{ form.csrf_token|render }}
+                    <div class="mb-30">
+                        <div class="field">
+                            {{ form.username|render }}
+                        </div>
+                        <div class="field">
+                            {{ form.password|render }}
+                        </div>
+                    </div>
+                    <button type="submit" class="button primary block mt-30">Se connecter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "/layout.html.twig" %}
+
+{% block page_title %}Utilisateurs{% endblock %}
+
+{% block content %}
+    <div class="p-25">
+
+        <ul class="breadcrumb" style="font-size: 1.25em">
+            <li>Utilisateurs</li>
+        </ul>
+
+        <div class="box mt-20">
+            <h2 class="title">Liste des utilisateurs</h2>
+
+            {% include "/flash/info.html.twig" %}
+
+            <table class="table fulgur-searchtable fullwidth td-center">
+                <thead>
+                    <tr>
+                        <th class="control">Nom</th>
+                        <th class="control">Prénom</th>
+                        <th>Email</th>
+                        <th style="width: 150px"><a class="button primary" href="{{ route_url("user-manage-create") }}">Nouveau...</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.last_name }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <a class="ms-5" href="{{ route_url('user-manage-edit', user.username) }}"><i class="far fa-edit"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

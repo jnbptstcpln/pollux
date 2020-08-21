@@ -6,8 +6,11 @@
     <div class="p-25">
 
         <h1>
-            Bienvenue sur l'interface de gestion <code>POLLUX</code>
+            {{ __label.greetings(__user.first_name) }}
         </h1>
+        <p>
+            Bienvenue sur l'interface de gestion <code>POLLUX</code>
+        </p>
 
     </div>
 {% endblock %}
